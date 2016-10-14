@@ -1,0 +1,47 @@
+
+          README: Intel(R) Atom
+
+This file contains board-specific information for Intel(R) Atom BSP.
+
+This file documents BSP interface changes from previous software or hardware
+versions, and notifies the user of serious caveats that must be noted before
+using this BSP.
+
+Additionally, the target board's reference entry (e.g., man itl_atom for UNIX
+or the HTML reference entries) provides board-specific information necessary
+to run VxWorks.  The target reference entry should be read fully before this
+BSP is used.
+
+--------------------------------------------------------------------------------
+RELEASE 6.9/4
+
+    Released from Wind River for General Purpose Platform 6.9, VxWorks 6.9.x
+
+    Remove DRV_TIMER_MC146818 in auxiliary clock, add DRV_TIMER_I8253 and
+    DRV_TIMER_MC146818 by default. (WIND00375416)
+
+    Exception in boot due to NULL pPciDev in sysDeviceFilter. (WIND00387850)
+
+    Support Intel norco kit. (WIND00380360)
+
+RELEASE 6.9/3
+
+    Released from Wind River for General Purpose Platform 6.9, VxWorks 6.9.2
+
+    Support SYMMETRIC_IO_MODE for NITX-300/315 and CrownBay. (WIND00346005)
+
+RELEASE 6.9/2
+
+    Released from Wind River for General Purpose Platform 6.9, VxWorks 6.9.2
+
+RELEASE 6.9/1
+
+    Released from Wind River for General Purpose Platform 6.9, VxWorks 6.9.1
+
+    Fix double creating of XBD wrapper in mkboot.c. (WIND00247626)
+
+RELEASE 6.9/0
+
+    Released from Wind River for General Purpose Platform 6.9, VxWorks 6.9
+
+    Initial release

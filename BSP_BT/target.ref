@@ -1,0 +1,2633 @@
+\" itl_atom/target.ref - Intel Atom target specific documentation
+\"
+\" Copyright (c) 2010-2014 Wind River Systems, Inc.
+\"
+\" The right to copy, distribute, modify or otherwise make use
+\" of this software may be licensed only pursuant to the terms
+\" of an applicable Wind River license agreement.
+\"
+\" modification history
+\" --------------------
+\" 01y,04aug14,scm  VXW6-83243 - Correct Baley Bay board specific 
+\"                  issue description...
+\" 01x,29oct13,scm  WIND00440715 - correct bundle name reference
+\" 01w,24sep13,scm  WIND00374998 - Add bundle for Bay Trail.
+\" 01v,20dec12,yjw  Correct some errors in target.ref.(WIND00395597)
+\" 01u,18dec12,yjw  Add comments about GRUB Multiboot.(WIND00395534)
+\" 01t,28nov12,yjw  Add Intel Norco board.(WIND00380360)
+\" 01s,01nov12,g_x  clarify location of multi-stage boot images (WIND00379766)
+\" 01r,23oct12,cwl  remove reference of sysPhysRamDesc. (WIND00381571)
+\" 01q,06aug12,g_x  add vxStage1Boot in bootrom support table (WIND00367225)
+\" 01p,21may12,wyt  WIND00346005 - Update PC Console components for
+\"                  NITX-300/315.
+\" 01o,20apr12,jjk  WIND00329365 - Support for SMP
+\" 01n,20apr12,wyt  WIND00340696 - Switch to new generic mkboot utility.
+\" 01m,27mar12,wyt  WIND00340694 - Change to new AHCI and ICH driver.
+\" 01l,22feb12,jjk  WIND00332334 - Cedar Rock Board specific issues.
+\" 01k,16jan12,wyt  Fix creating bootable hard disk instructions.
+\" 01j,09jan12,sem  WIND00322011 - Update APIC_TIMER_CLOCK_HZ description.
+\"                  WIND00326822 - Update BIOS E820 autosize instructions.
+\" 01i,17nov11,wyt  Add NITX-300/315 Board and Crown Bay board support.
+\" 01h,15nov11,jjk  WIND00255693 - Adding support for Cedar Rock
+\" 01g,26sep11,jjk  WIND00288289 - Document recent changes
+\" 01f,27jun11,jjk  Correct instructions to follow (Fix WIND00284827).
+\" 01e,13jun11,j_l  Add PXE information (Fix for WIND00281712).
+\" 01d,31jan11,sem  WIND00253119 - Update non-bootApp instructions
+\" 01c,28jan11,rbc  Fix apigen errors.
+\" 01b,20jan11,rbc  WIND00244749 - Add support for bundles.
+\" 01a,30apr10,rbc  created based on itl_crownbeach (01b)
+\"
+\TITLE itl_atom - Intel(R) Atom
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+INDEX
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\cs
+ 1.0 INTRODUCTION
+ 2.0 BOOT PROCESS
+ -   2.1 Single-stage BootApp
+ -   2.2 Multi-stage BootApp
+ -   2.3 Multi-stage BootApp requirements and usage
+ 3.0 BOOT DEVICE AND IMAGE CREATION
+ -   3.1 Creating a bootrom or BootApp image
+ -   3.2 Creating bootable disks.
+ -   3.3 Creating bootable USB flash drive from Linux
+ -   3.4 Creating bootable USB flash drive from Windows
+ -   3.5 Creating bootable hard disks from Linux and Windows
+ -   3.6 Creating bootable devices from VxWorks
+ -   3.7 Creating Multi-Stage bootable images
+ -   3.8 Creating a VIP/VxWorks kernel image
+ -   3.9 Booting VxWorks via PXE
+ -   3.10 Using GRUB to boot VxWorks
+ 4.0 FEATURES
+ -   4.1 List of Hardware Features (Intel(R) Atom REVQ board)
+ -   4.2 Feature Interactions
+ 5.0 HARDWARE DETAILS
+ -   5.1 Intel(R) Crown Bay specific issues
+ -   5.2 NITX-300/315 specific issues
+ -   5.3 Cedar Rock Board specific issues
+ -   5.4 Nano Board specific issues
+ -   5.5 Bayley Bay Board specific issues
+ -   5.6 Jumpers & Switches
+ -   5.7 Memory Maps
+ -   5.8 Interrupts
+ -   5.9 Serial Configuration
+ -   5.10 Network Configuration
+ -   5.11 Devices
+ -   5.12 USB Host Support
+ -   5.13 Boot Devices
+ -   5.14 Boot Methods
+ -   5.15 SD-CARD 
+ 6.0 SPECIAL CONSIDERATIONS
+ -   6.1 Make Targets
+ -   6.2 BSP Bootloaders and Bootroms
+ -   6.3 BSP Validated Tools
+ -   6.4 Special Routines
+ -   6.5 BIOS E820 Memory Auto-size
+ -   6.6 Warm Boot Devices
+ -   6.7 Hyper-threading configuration
+ -   6.8 Four distinct build models
+ -   6.9 Changing AP startup time in SMP based configuration
+ 7.0 KNOWN PROBLEMS
+ 8.0 BOARD LAYOUT
+ 9.0 SEE ALSO
+ 11.0 BIBLIOGRAPHY
+\ce
+
+\" Keep above INDEX section in sync when adding numbered headings.
+\" Use the following command to generate above index on Linux
+\" cat target.ref | grep "\\s*h* [0-9]" | sed -e 's/\\h//g' | sed -e 's/\\sh/ -  /g'
+
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 1.0 INTRODUCTION
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+This reference entry provides board-specific information necessary to run
+VxWorks for the Intel(R) Atom BSP. Before using a board with VxWorks, verify
+that the board runs in the factory configuration by using vendor-supplied
+ROMs and jumper settings and checking the RS-232 connection.
+
+This BSP currently supports:
+         Portwell WADE 8070 (Atom N-270(Diamondville))
+         Portwell NANO 8044 (eMenlow ) (Atom Z-530/US15W Chipset)
+         Intel(R) Mooncreek CRB
+         Intel(R) Navypier CRB
+         Intel(R) Crownbeach CRB
+         Intel(R) CedarRock CRB
+         Intel(R) Crown Bay CRB
+         Norco Kit
+         Emerson  NITX-300/315
+         Intel(R) Bayley Bay CRB
+\bs
+NOTE: Intel(R) Mooncreek CRB, Intel(R) Navypier CRB, Intel(R) Crownbeach CRB, 
+      Intel(R) CedarRock, CRB and Intel(R) Crown Bay CRB, and Intel(R) Bayley 
+      Bay CRB documentation is proprietary and can only be obtained at this 
+      time from Intel. Contact your sales representative.
+NOTE: Portwell WADE 8070 and Portwell NANO 8044 CRB documentation is
+      proprietary and can only be obtained at this time from Portwell. Contact
+      your sales representative.
+NOTE: Emerson NITX-300/315 documentation is proprietary and can only be
+      obtained at this time from Emerson. Contact your sales representative.
+NOTE: Norco kit documentation is proprietary and can only be obtained from Norco.
+\be
+
+Due to the complexity of hardware and configuration, the use of editing config.h
+is not recommended. The use of vxprj or Workbench with board bundles is preferred.
+
+Unless it's one of the supported targets, boards based on technology similar to one 
+of the targets supported by this BSP are not guaranteed to work.  Boards                                       
+with custom or modified BIOS's are not guaranteed to work. WindRiver does not
+provide BIOS updates.
+
+Before using a board with VxWorks, verify that the board runs in the factory
+configuration by using vendor-supplied ROMs and jumper settings.
+
+The vxprj/Workbench "Bundle" mechanism `must' be used to produce VxWorks and bootrom
+images for any targets supported by this BSP, other than the default Intel(R) Nano CRB.
+
+Refer to`HARDWARE DETAILS' section for CRB specific setup requirements, hardware
+problems and work-arounds.
+
+For best results, the board vendor's documentation should be used in
+conjunction with this document.
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 2.0 BOOT PROCESS
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+This section discuss the different boot mechanisms available for use and supported
+by this BSP.
+
+\"--------------------------------------------------------------------------------
+\sh 2.1 Single-stage BootApp
+\"--------------------------------------------------------------------------------
+
+Single-stage BootApp is the same bootApp that is available in previous
+versions of VxWorks (prior to 6.9.2).
+
+In single-stage BootApps, the system BIOS code loads and executes the
+bootstrap loader when the board is powered on. The bootstrap loader is
+written in x86 16-bit assembly language. The BIOS obtains the
+bootstrap loader from the boot sector, which may be in one of several
+locations: an USB 2.0 key, a hard disk, or some other
+alternative. When the BIOS finds the bootstrap loader, it transfers
+execution to it. The bootstrap loader finds the bootrom.sys file,
+loads it into memory, and transfers execution to romInit.
+
+Size of single-stage bootrom.sys file must be less than or equal to
+589824 (ROM_SIZE) bytes, otherwise the boot process will fail. It is a
+restriction for IA boot disks. If the image size is larger than 589824
+bytes, the build process will also fail.  Please refer to "Multi-stage
+BootApp" section below for methods of overcoming this limitation.
+
+\"--------------------------------------------------------------------------------
+\sh 2.2 Multi-stage BootApp
+\"--------------------------------------------------------------------------------
+
+Multi-stage BootApp is being introduced to overcome the 589824
+(0x90000) byte limitation of single-stage BootApp.
+
+Multi-stage BootApps consist of two stages. Stage one will replace the
+original bootrom.sys and will be much smaller in size.  The original
+bootrom.sys will become stage two and will be renamed as bootapp.sys.
+
+The MBR (Master Boot Record) will behave the same as with the original
+mechanism, but the device information will be used to locate the
+bootrom.sys (copied from vxStage1Boot.bin) image, via the 'int 0x13'
+BIOS interface, which is then read into low memory at location 0x8000
+(FIRST_TEXT_ADRS), again using the 'int 0x13' BIOS interface.  This
+small first stage boot loader will then load the second stage
+bootapp.sys (copied from vxWorks_romCompress.bin) file into memory
+location ROM_TEXT_ADRS and jump into 32 bit mode, and then start
+romInit.  The value of ROM_TEXT_ADRS macro differs between
+single-stage and multi-stage BootApps.
+
+The second stage works as the original. It decompresses the bootrom
+vxImage to RAM_DST_ADRS (RAM_LOW_ADRS of BootApp for project builds)
+while in 32 bit mode and executes vxImage which gives the bootrom
+prompt.
+
+Multi-stage BootApp can operate in several different modes.
+
+Fast reboot mode is enabled by including BUNDLE_MSB_FAST_REBOOT
+(includes INCLUDE_MULTI_STAGE_BOOT and INCLUDE_FAST_REBOOT
+components).  In this mode, second stage saves a copy of itself to a
+memory area at the end of the VxWorks system memory (sysMemTop()).
+Checksum is saved with a copy of the image.  This second stage copy is
+restored on warm reboots after checksum is checked.  For fast reboots,
+warm reboots will jump back to the original entry point in stage 1 at
+0x8010 (FIRST_TEXT_ADRS+ROM_WARM_HIGH). This entry point will restore
+the previously saved second stage memory and jump to it.  Some RAM is
+used for the second stage image copy.
+
+If fast reboot is not enabled by only including the
+INCLUDE_MULTI_STAGE_BOOT component, only cold reboots are done.  This
+is due to many BIOS'es not being able to re-access the boot device on
+a warm reboot if the device has also been initialized by VxWorks.  For
+example, if a high speed USB flash drive is used as the boot device,
+BIOS is not able to re-access the drive on a warm reboot if BootApp or
+VxWorks is built with INCLUDE_EHCI.  Another example is if a SATA
+drive is used as the boot device, BIOS is not able to re-access the
+drive on a warm reboot if BootApp or VxWorks image is built with
+INCLUDE_DRV_STORAGE_AHCI.  No RAM is used for second stage image copy.
+
+If the user wishes to do non-fast-reboot warm reboots anyway to save
+RAM space, BUNDLE_MSB_WARM_REBOOT (includes INCLUDE_MULTI_STAGE_BOOT
+and INCLUDE_MULTI_STAGE_WARM_REBOOT components) can be included;
+however, care should be taken not to initialize the boot device in
+BootApp and VxWorks.  In these cases, warm reboots will jump back to
+the original entry point in stage 1 at 0x8010
+(FIRST_TEXT_ADRS+ROM_WARM_HIGH).  This entry point will jump back to
+16 bit mode and start everything from scratch, loading the seconds
+stage bootapp.sys file again from the boot media and so on.
+No RAM is used for second stage image copy.
+\ss
+NOTE: INCLUDE_FAST_REBOOT and INCLUDE_MULTI_STAGE_WARM_REBOOT
+      components cannot be included at the same time.  This also means that
+      BUNDLE_MSB_FAST_REBOOT and BUNDLE_MSB_WARM_REBOOT cannot be added at
+      the same time.
+\se
+
+The default value of multi-stage BootApp ROM_SIZE is set to 2,097,152
+(0x200000) bytes; however, macro and parameter values can be modified
+to change this value.
+
+\"--------------------------------------------------------------------------------
+\sh 2.3 Multi-stage BootApp requirements and usage
+\"--------------------------------------------------------------------------------
+
+Currently `only the use of the GNU compiler' is supported with Multi-stage
+boot. The first stage source file `vxStage1Boot.s' is hand coded for use
+with the GNU compiler directives.
+
+The first stage is vxStage1Boot.bin (as bootrom.sys), the second stage is
+vxWorks_romCompress.bin (as bootapp.sys) and the third stage is VxWorks kernel itself.
+All these three stages must agree on the common addresses used by them all,
+BOOT_IMAGE_ADRS and BOOT_IMAGE_SIZE. All the required values are inherited and
+available via the following definitions already present in BSP and OS.
+\cs
+    #define BOOT_IMAGE_ADRS (LOCAL_MEM_LOCAL_ADRS + BOOT_IMAGE_ADRS_OFFSET)
+    #define BOOT_IMAGE_ADRS_OFFSET (BOOT_MULTI_STAGE_DATA_OFFSET)
+    #define BOOT_MULTI_STAGE_DATA_OFFSET 0x5000
+
+    #define BOOT_IMAGE_SIZE (LOCAL_MEM_LOCAL_ADRS + BOOT_IMAGE_SIZE_OFFSET)
+    #define BOOT_IMAGE_SIZE_OFFSET (BOOT_IMAGE_ADRS_OFFSET + BOOT_IMAGE_ADRS_OFFSET_SIZE)
+    #define BOOT_IMAGE_ADRS_OFFSET_SIZE 4
+\ce
+
+When building your multi-stage BootApp and your VxWorks kernel image project, you
+need to include the (agreed upon) multi-stage boot bundle in both the BootApp
+and the VxWorks kernel. Both the BootApp and the kernel need to include the same
+bundle.
+\cs
+    vxprj bundle add BUNDLE_MSB_FAST_REBOOT
+    or
+    vxprj bundle add BUNDLE_MSB_WARM_REBOOT
+\ce
+
+When building your multi-stage BootApp project (vxprj or Workbench) you need
+to set the ROM_SIZE and ROM_TEXT_ADRS via a build macro. This is `not' required for
+the VxWorks kernel projects. This is required since the original non-multi-stage
+boot values are inherited via the Makefile in the BSP, and we need to adjust them
+for a project build without editing the Makefile.  
+\cs
+    vxprj buildmacro set ROM_SIZE 00200000
+    vxprj buildmacro set ROM_TEXT_ADRS 00408000
+\ce
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 3.0 BOOT DEVICE AND IMAGE CREATION
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+This section describes how to prepare boot devices and BootApp images to load
+VxWorks.
+
+\"--------------------------------------------------------------------------------
+\sh 3.1 Creating a bootrom or BootApp image
+\"--------------------------------------------------------------------------------
+
+       `Create a BootApp image using the vxprj facility:'
+\cs
+        vxprj create itl_atom gnu itl_atom_gnu_bootapp -profile PROFILE_BOOTAPP_BASIC
+        cd itl_atom_gnu_bootapp
+\ce
+        Select the Board Bundle
+\cs
+        vxprj bundle add BUNDLE_NANO_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_WADE_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_MOONCREEK_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_NAVYPIER_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_CROWNBEACH_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_CEDAR_ROCK_BOOTAPP
+	or
+        vxprj bundle add BUNDLE_NITX_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_CROWNBAY_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_NORCO_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_BAY_TRAIL_BOOTAPP
+\ce
+        Complete build
+\cs
+        vxprj build set default_romCompress
+        vxprj build vxWorks_romCompress.bin
+\ce
+
+\"--------------------------------------------------------------------------------
+\sh 3.2 Creating bootable disks.
+\"--------------------------------------------------------------------------------
+
+You may use a USB flash disk or hard disk to boot VxWorks.  You must
+boot from a primary bootable partition on the primary disk as seen by
+the PC BIOS.  VxWorks is also bootable over the network.
+
+It is recommended that you use FDISK or a similar utility to create
+the primary bootable partition.  The reason is that FDISK uses PC BIOS
+calls to create the disks master boot record.  The BIOS is responsible
+for loading the boot loader during the boot process.  Therefore, a
+utility that uses the BIOS to write partitions, such as FDISK, is
+recommended.
+
+The partition and file system on the disk may be either FAT12, or
+FAT16, or VxWorks proprietary VXLONGNAMES file system.  FAT32 is not
+supported by the boot loader.  If you need FAT32, make a small primary
+boot partition that is FAT16, and a second larger partition that is
+FAT32 atop the remainder of the disk.
+
+\"--------------------------------------------------------------------------------
+\sh 3.3 Creating bootable USB flash drive from Linux
+\"--------------------------------------------------------------------------------
+
+1. Set up USB flash drive on host
+
+   a. Find the USB drive device name. The USB flash drive is usually
+      named /dev/sdb. Partitions on the drive are then named
+      /dev/sdb1, /dev/sdb2, and so on. It is important to verify the
+      naming as it may be some other variant beginning with
+      /dev/sd. After inserting the USB drive, perform the following
+      commands:
+
+\cs
+      % su root
+      % /sbin/fdisk -l
+\ce
+
+      The output includes something like the following:
+
+\cs
+      ...
+      Disk /dev/sdb: 16 MB, 16138240 bytes
+      1 heads, 31 sectors/track, 1016 cylinders
+      Units = cylinders of 31 * 512 = 15872 bytes
+
+         Device Boot Start End Blocks Id System
+
+         Device Boot      Start         End      Blocks   Id  System
+      /dev/sdb1   *           1        1016       15732+   6  FAT16
+\ce
+
+      The exact output depends on the flash drive type and existing
+      partitions.
+
+   b. Examine the fdisk output to verify that the sector size is 512
+      bytes.
+
+      CAUTION: If the sector size is not 512 bytes, the USB drive will
+      probably not work for booting with vxld. (vxld is a small 16-bit
+      utility that is loaded by the BIOS from the USB flash
+      drive. vxld in turn loads bootrom.sys from the USB flash drive
+      and passes control to the boot application.)
+
+      In the preceding example output, the following element indicates
+      that the sector size is 512:
+
+\cs
+      cylinders of 31 * 512 = 15872 bytes
+\ce
+
+      Another method for verifying the size of the sectors is simply
+      to run the /bin/dmesg utility after inserting the USB drive. The
+      output should include a line like this:
+
+\cs
+      SCSI device sdb: 2083840 512-byte hdwr sectors (1067 MB)
+\ce
+
+      CAUTION: If the drive name is not /dev/sdb, be sure to
+      substitute the correct name in the steps described below.
+
+2. Create a Boot Partition
+
+   Linux provides various tools for partitioning disks. This
+   section discusses parted and fdisk. Note that these utilities do
+   not work with some USB flash drives. Wind River recommends using
+   a USB flash drive from a major producer that has a capacity of
+   no more than 1 GB. The sector size must be 512 bytes.
+
+   Using parted
+
+   a. Change to root user and start parted, as follows:
+
+\cs
+      % su root
+      % /sbin/parted /dev/sdb
+\ce
+
+   b. Check the existing partition structure on the drive. At the
+      (parted) prompt, enter print, as follows:
+
+\cs
+      (parted) print
+        Model: SanDisk Cruzer Micro (scsi)
+        Disk /dev/sdb: 512MB
+        Sector size (logical/physical): 512B/512B
+        Partition Table: msdos
+        Number  Start   End    Size   Type     File system  Flags
+         1      31.7kB  512MB  512MB  primary  fat16        boot, lba
+\ce
+
+   c. If the output from the print command indicates that the
+      partition table is not msdos, remove the table and create a
+      new one, and create a new partition, using the following
+      commands:
+
+      1) mktable to change the disk label.
+      2) y to continue.
+      3) msdos for the new disk label.
+      4) mkpart to create a new partition.
+      5) primary for the partition type.
+      6) fat16 for the file system type.
+      7) Enter 0 for start.
+      8) Enter size for the end. Use the size of the drive.
+
+   d. If the output from the print command indicates that the file
+      system of partition 1 is not fat16, delete the existing
+      partition, and create a new one using the following commands:
+
+      1) rm 1 to delete the partition.
+      2) mkpart to create a new partition.
+      3) primary for the partition type.
+      4) fat16 for the file system type.
+      5) Enter 0 for start.
+      6) Enter size for the end. Use the size of the drive.
+
+   e. If the output from the print command does not include the
+      boot flag, use the following command:
+
+\cs
+      toggle 1 boot
+\ce
+
+   f. If necessary, execute print again to verify the msdos
+      partition table with bootable FAT16 file system. The lba flag
+      may be missing.
+
+   g. Exit parted with the quit command.
+
+   Using fdisk
+
+   a. Change to root user and start fdisk, as follows:
+
+\cs
+      % su root
+      % /sbin/fdisk /dev/sdb
+\ce
+
+   b. Then use the following commands:
+
+      a) p to show the existing partitions.
+      b) d to delete it.
+      c) p again to show any remaining partitions (if partitions
+         exist, repeat the previous step).
+      d) n to make a new partition.
+      e) p for primary partition.
+      f) 1 to make this the first partition.
+      g) ENTER to use the default first cylinder.
+      h) Enter size to set the partition size. Use the size of the
+         drive, or ENTER to accept default, unless the drive is
+         larger than 2 GB.
+      i) a to make this partition active.
+      j) 1 to select partition 1.
+      k) t to change the partition file system.
+      l) 6 to select the FAT16 file system.
+      m) w to write the new partition table.
+
+      'Note:' that the partition size should be less than or equal
+      to the smaller of either the flash drive size or 2 GB. fdisk
+      accepts various syntaxes for specifying the partition size
+      (for example, +128M). You can also simply use the ENTER key
+      to accept the default, unless the drive is larger than 2 GB.
+
+3. Add Boot Loader to Drive
+
+   a. Copy $WIND_BASE/host/$WIND_HOST_TYPE/bin/vxld.bin from your
+      VxWorks installation to another location on your host
+      machine. vxld is a small 16-bit utility that is loaded by the
+      BIOS from the USB flash drive. vxld in turn loads bootrom.sys
+      from the USB Flash Drive and passes control to the boot
+      application.
+
+   b. If using single-stage BootApp, rename the VxWorks boot loader 
+      file you previously created from vxWorks_romCompress.bin to 
+      bootrom.sys and copy it to the same location.  If using multi-stage
+      BootApp, rename the VxWorks boot loader file you previously 
+      created from vxStage1Boot.bin to bootrom.sys and copy it to 
+      the same location.
+
+   c. Configure the mtools drive name by editing (as root)
+      /etc/mtools.conf, adding the following new entry for the USB
+      drive:
+
+\cs
+      drive u: file="/dev/sdb1"
+\ce
+
+      'Note:' u: is an arbitrary (but logical) drive name for
+      USB. See the mtools man page for more information.
+
+   d. From the directory in which the images are located, format
+      the partition and copy the bootrom.sys file, sync the drive,
+      and then eject it, as follows:
+
+\cs
+      % su root
+      % mformat u: -B vxld.bin
+      % mcopy bootrom.sys u:
+      % sync
+      % eject /dev/sdb1
+\ce
+
+   e. Unplug the USB Flash drive from your Linux host.
+
+   f. Plug the USB Flash drive into your target and change the BIOS
+      setting to boot from USB flash drive.
+
+
+\"--------------------------------------------------------------------------------
+\sh 3.4 Creating bootable USB flash drive from Windows
+\"--------------------------------------------------------------------------------
+You will require the mkbt.exe utility and possibly the diskpart.exe utility that
+is distributed with Windows. The `diskpart' utility will be used to correct disks that
+do not have a partition set to active. The `mkbt' utility is used to extract
+important boot parameters required by the BIOS, from a valid `bootsect.bin' file,
+and write it to the boot parameters in the MBR (master boot record) of the USB drive.
+
+1. Set up USB flash drive on host
+
+   a. Download free software mkbt20 from
+      ftp://dl.xs4all.nl/pub/mirror/nu2files/mkbt20.zip, or
+      http://ftp.rz.tu-bs.de/pub/mirror/www.nu2.nu/nu2files/mkbt20.zip
+      and extract it to BSP directory
+
+   b. Insert a USB flash drive to host and find the USB drive device name.
+      Use an USB 2.0 key to PC (USB 1.x key is not supported)
+
+2. Create a Boot Partition and Add Boot Loader to Drive
+
+   a. In a DOS command shell run the following commands to ensure USB drive is
+      Configured correctly for `mkbt'
+
+      Execute `diskpart' as administrator, and then list the disks.
+
+      `NOTE': Commands below are indicated after the `DISKPART>" prompt.
+
+\cs
+      DISKPART> list disk
+
+        Disk ###  Status         Size     Free     Dyn  Gpt
+        --------  -------------  -------  -------  ---  ---
+        Disk 0    Online          465 GB  1024 KB
+        Disk 1    Online         1907 MB      0 B
+\ce
+
+      Observe USB drive number in the displayed list (USB is Disk 1) and select disk 1
+
+\cs
+      DISKPART> select disk 1
+
+      Disk 1 is now the selected disk.
+\ce
+
+      List disks again to make sure you have the correct drive selected, indicated
+      by the "*" character.
+
+\cs
+      DISKPART> list disk
+
+        Disk ###  Status         Size     Free     Dyn  Gpt
+        --------  -------------  -------  -------  ---  ---
+        Disk 0    Online          465 GB  1024 KB
+      * Disk 1    Online         1907 MB      0 B
+\ce
+
+      Clean the disk, create primary partition and make it active as indicated below.
+
+\cs
+      DISKPART> clean
+
+      DiskPart succeeded in cleaning the disk.
+
+      DISKPART> create partition primary
+
+      DiskPart succeeded in creating the specified partition.
+
+      DISKPART> select partition 1
+
+      Partition 1 is now the selected partition.
+
+      DISKPART> active
+
+      DiskPart marked the current partition as active.
+\ce
+
+      Now format the disk as fat. It will take about 2 minutes, depending on the disk size.
+
+\cs
+      DISKPART> format fs=fat
+
+        100 percent completed
+
+      Diskpart successfully formatted the volume.
+\ce
+      Assign a drive letter and exit.
+
+\cs
+      DISKPART> assign
+
+      DiskPart successfully assigned the drive letter or mount point.
+
+      DISKPART> exit
+\ce
+
+      Note the drive letter that is assigned to the USB drive. We will use this
+      drive letter with the `mkbt' utility.
+
+   b. In the BSP directory, run the following command (this example
+      assumes that the drive letter is g:):
+
+\cs
+        mkbt -x bootsect.bin g:
+\ce
+
+       Following information will be shown :
+
+\cs
+        * Expert mode (-x)
+        * Warning different filesystem ID
+        Size=0bytes OEM="MSDOS5.0" VolLabel="NO NAME" FileSys="FAT16"
+\ce
+
+   c. If using single-stage BootApp, run the following command to copy
+      the generated vxWorks_romCompress.bin to the USB key as
+      bootrom.sys.  If using multi-stage BootApp, copy
+      vxStage1Boot.bin to the USB key as bootrom.sys.  The image on
+      the USB key MUST be contiguous or the first stage of the boot
+      will fail. A contiguous image can be generated by saving all
+      images from the USB key to a temporary location, deleting all
+      images from USB key, and then copying each image back to the USB
+      key.
+
+      `For single-stage BootApp:'
+
+\cs
+        cp "project directory"/default_romCompress/vxWorks_romCompress.bin g:bootrom.sys
+
+        or
+
+        cp "project directory"/default_romCompress/vxWorks_romCompress.bin /media/"device"/bootrom.sys
+\ce
+
+       else
+
+\cs
+        copy vxWorks_romCompress.bin g:bootrom.sys
+\ce
+
+      `For multi-stage BootApp:'
+
+\cs
+      copy vxStage1Boot.bin g:bootrom.sys
+\ce
+
+   d. If using multi-stage BootApp, also copy vxWorks_romCompress.bin
+      as bootapp.sys to the USB key.
+
+      For multi-stage BootApp:
+
+\cs
+      copy vxWorks_romCompress.bin g:bootapp.sys
+\ce
+
+   e. Unplug the USB Flash drive from your Windows host.
+
+   f. Plug the USB Flash drive into your target and change the BIOS
+      setting to boot from USB flash drive.
+
+
+3. Booting with the created USB drive
+
+    Insert the USB key to the Atom board and reset. Change the BIOS
+    setting to boot from the USB. After the VxWorks bootrom boots up,
+    the following will be displayed:
+
+\cs
+                            VxWorks System Boot
+
+
+        Copyright 1984-2011  Wind River Systems, Inc.
+
+
+
+
+
+        CPU: Intel(R) Atom Processor SYMMETRIC IO Norco
+        Version: VxWorks 6.9
+        BSP version: 6.9/4
+        Creation date: Nov 30 2012, 17:34:18
+
+
+        Press any key to stop auto-boot...
+
+        [VxWorks Boot]:
+
+\ce
+
+    If you want to boot VxWorks image from USB key, include the component
+    INCLUDE_USB in your BootApp project and rebuild your bootrom. (default is enable)
+\cs
+    vxprj component add INCLUDE_USB
+\ce
+
+    Some USB key's might not be found after the bootrom boots up. Try
+    removing and reinserting the USB key.
+    Enter following command in VxWorks Boot Shell,
+
+\cs
+        [VxWorks Boot]: devs
+\ce
+
+    You will see following:
+
+\cs
+        drv name
+           0 /null
+           1 /tyCo/0
+           1 /tyCo/1
+           6 host:
+           3 /bd0
+\ce
+
+\cs
+        [VxWorks Boot]: ?
+\ce
+
+    You will see some information as following:
+
+\cs
+       Device Formats:
+         boot device: fs                  file name: /bdx/vxWorks
+
+       Boot Flags:
+         0x02 -   load local system symbols
+         0x04 -   don't autoboot
+         0x08 -   quick autoboot (no countdown)
+         0x80 -   use tftp to get boot image
+
+       Available Boot Devices:
+         Filesystem Devices:  /bd0  bd0
+         Enhanced Network Devices: gei0 tcei0
+       [VxWorks Boot]:
+\ce
+
+    The "/bd0" shows VxWorks bootrom found the USB key, Then enter 'c' command in
+    VxWorks Boot Shell to change boot device to "fs", file name to "/bd0/vxWorks",
+    other field to "gei0" or "tcei0" to activate ethernet connection, save it. Finally,
+    enter '@' command to start VxWorks image, and you'll see vxWorks shell.
+\ss
+    NOTE: As of the writing of this document, network initialization
+          does not work using the bootline's other field when target is
+          booted off of an ahci or ich storage device.  As a workaround, the
+          initialization process can be completed manually after boot by
+          doing something like:
+\se
+\cs
+       ipcom_drv_eth_init "gei", 0, 0
+       ifconfig "gei0 90.0.0.50 netmask 255.255.255.224 up"
+       or
+       ipcom_drv_eth_init "tcei", 0, 0
+       ifconfig "tcei0 90.0.0.50 netmask 255.255.255.224 up"
+\ce
+
+\"--------------------------------------------------------------------------------
+\sh 3.5 Creating bootable hard disks from Linux and Windows
+\"--------------------------------------------------------------------------------
+
+Connect a SATA hard disk to host and format a partition of less than
+2GB in FAT format (not FAT32).  Then, follow the same procedure as
+when making a bootable USB flash drive.  Reconnect the SATA drive to
+the target board, and Change the BIOS setting to boot from the SATA
+drive.
+
+\"--------------------------------------------------------------------------------
+\sh 3.6 Creating bootable devices from VxWorks
+\"--------------------------------------------------------------------------------
+
+In order to prepare a bootable device (USB disk or hard disk), you have
+to initially (ONCE only) boot VxWorks over the network using a bootable
+USB flash drive or via PXE (Please refer to "Booting VxWorks via PXE"
+section) and configure the hard disk using the VxWorks target shell.
+
+        VxWorks image can be created as follows:
+
+\cs
+           vxprj create itl_atom gnu itl_atom_gnu
+           cd itl_atom_gnu
+\ce
+           Select the Board Bundle
+\cs
+           vxprj bundle add BUNDLE_NANO
+           or
+           vxprj bundle add BUNDLE_WADE
+           or
+           vxprj bundle add BUNDLE_MOONCREEK
+           or
+           vxprj bundle add BUNDLE_NAVYPIER
+           or
+           vxprj bundle add BUNDLE_CROWNBEACH
+           or
+           vxprj bundle add BUNDLE_CEDAR_ROCK
+           or
+           vxprj bundle add BUNDLE_NITX
+           or
+           vxprj bundle add BUNDLE_CROWNBAY
+           or
+           vxprj bundle add BUNDLE_NORCO
+           or
+           vxprj bundle add BUNDLE_BAY_TRAIL 
+\ce
+           Include the following components
+\cs
+           vxprj component add INCLUDE_XBD
+           vxprj component add INCLUDE_XBD_BLK_DEV
+           vxprj component add INCLUDE_XBD_PART_LIB
+           vxprj component add INCLUDE_XBD_RAMDRV
+           vxprj component add INCLUDE_DOSFS
+           vxprj component add INCLUDE_FS_MONITOR
+           vxprj component add INCLUDE_SHELL
+           vxprj component add INCLUDE_DRV_STORAGE_AHCI
+           vxprj component add INCLUDE_DRV_STORAGE_PIIX
+           vxprj component add INCLUDE_USB_INIT
+           vxprj component add INCLUDE_EHCI_INIT
+           vxprj component add INCLUDE_USB_MS_BULKONLY_INIT
+           vxprj component add INCLUDE_MKBOOT  
+\ce 
+
+           Build the project
+\cs
+           vxprj build
+\ce
+
+        Attach a boot device (a SATA hard disk, an IDE hard disk or an USB
+        flash disk) to the board. Load the generated VxWorks image into the
+        target and from the target shell, enter the command:
+
+\cs
+        -> devs
+        drv name
+          0 /null
+          1 /tyCo/0
+          1 /tyCo/1
+          4 /ata0:1
+          5 /bd0
+          host:
+          6 /vio
+\ce
+
+        You will see an USB flash disk is shown as "/bd0" and a hard disk is
+        shown as "/ata0:1". Actually you may connect a hard disk to any port,
+        and the device name would shown as "/atax:1", "x" means the port number.
+        This document will cite port 0 as an example.
+
+        From the target shell prompt, enter the command:
+
+\cs
+         -> xbdCreatePartition  "/bd0", 2, 99
+         or
+         -> xbdCreatePartition  "/ata0:1", 4, 33, 33, 33
+\ce
+
+        Note: Any bootable hard disk partition should not exceed 2 GB. The
+            parameters "4, 33, 33, 33" specifies that there should be 4
+            partitions, part0, part1, part2, part3. The partitions part1, 2,
+            and 3 are created with "33 percent" of the disk capacity and the
+            rest would be allocated to part0. The command does not specify the
+            amount of the first partition size.
+
+            With a 80GB drive. The above command creates 4 partitions, the
+            last of partitions with sizes of  33%, 33%, 33% respectively. The
+            bootable partition gets 1% (i.e. 100 minus 33 minus 33 minus 33 = 1%),
+            which is less than 2GB on a 80 GB hard disk.
+
+        From the target shell prompt, enter the command:
+
+\cs
+        ->devs
+        drv name
+          0 /null
+          2 /tyCo/0
+          2 /tyCo/1
+          4 /ata0:1
+          5 /ata0:2
+          5 /ata0:3
+          5 /ata0:4
+          6 /bd0
+          7 /bd0:2
+          host:
+          10 /vio
+\ce
+
+        Execute "dosFsVolFormat" command:
+
+\cs
+         -> dosFsVolFormat "/bd0"
+         or
+         -> dosFsVolFormat "/ata0:1"
+\ce
+               
+        Now, execute a command to install a FreeBSD style bootloader onto the
+        first sector of a disk.
+
+\cs
+         -> vxmbr "/bd0"
+         or
+         -> vxmbr "/ata0:1"
+\ce
+
+        Install a boot loader onto a partition boot sector.
+      
+\cs
+         -> vxsys "/bd0",0,0
+         or
+         -> vxsys "/ata0:1",0,0
+\ce  
+        
+        Copy bootrom.bin to the boot disk as bootrom.sys file.
+
+\cs
+        copy "host:bootrom.bin","/bd0/bootrom.sys"
+        or
+        copy "host:bootrom.bin","/ata0:1/bootrom.sys"
+\ce
+
+       Reboot the target board, change the BIOS settings to boot from the boot
+       device. After the VxWorks bootrom boots up, the following will be displayed:
+
+\cs
+                            VxWorks System Boot
+
+
+        Copyright 1984-2011  Wind River Systems, Inc.
+
+
+
+
+
+        CPU: Intel(R) Atom Processor SYMMETRIC IO Norco
+        Version: VxWorks 6.9
+        BSP version: 6.9/4
+        Creation date: Nov 30 2012, 17:34:18
+
+
+        Press any key to stop auto-boot...
+
+        [VxWorks Boot]:
+\ce      
+
+
+\"--------------------------------------------------------------------------------
+\sh 3.7 Creating Multi-Stage bootable images
+\"--------------------------------------------------------------------------------
+Because of architecture limitations, the Intel Architecture boot process runs in the
+first 640KB of memory, which limits the size of the compressed boot image (BootApp) to
+approximately 576KB. This size limitation restricts the number and/or combinations
+of components included in a BootApp, leading to significantly reduced functionality.
+Using a multi-stage boot loader will allow the use of very large (>1GB) compressed
+BootApp images.
+
+\ss
+    NOTE: For multi-stage boot, VxWorks and bootrom must apply the same
+          multi-stage boot bundle selections (BUNDLE_MSB_FAST_REBOOT or
+          BUNDLE_MSB_WARM_REBOOT) as the BootApp.
+\se
+    `1) Creating a bootrom image using the vxprj facility.'
+       Open a VxWorks Development Shell, in the BSP directory
+       "$(WIND_BASE)/target/config/itl_atom", run the command:
+\cs
+        vxprj create itl_atom gnu itl_atom_gnu_bootapp -profile PROFILE_BOOTAPP_BASIC
+        cd itl_atom_gnu_bootapp
+\ce
+        Set default build
+\cs
+        vxprj build set default_romCompress
+\ce
+        Select the Board Bundle
+\cs
+        vxprj bundle add BUNDLE_WADE_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_MOONCREEK_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_NANO_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_CROWNBEACH_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_NAVYPIER_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_CEDAR_ROCK_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_NITX_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_CROWNBAY_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_NORCO_BOOTAPP
+        or
+        vxprj bundle add BUNDLE_BAY_TRAIL_BOOTAPP
+\ce
+        Add a Multi-stage boot bundle
+\cs
+        vxprj bundle add BUNDLE_MSB_FAST_REBOOT
+        or
+        vxprj bundle add BUNDLE_MSB_WARM_REBOOT
+\ce
+        Set bootrom size and entry point
+\cs
+        vxprj buildmacro set ROM_SIZE 00200000
+        vxprj buildmacro set ROM_TEXT_ADRS 00408000
+\ce
+        Complete build
+\cs
+        vxprj build vxWorks_romCompress.bin
+        vxprj build vxStage1Boot.bin
+\ce
+
+       vxStage1Boot.bin is copied as bootrom.sys to the root directory of the bootable media first.
+       Now vxWorks_romCompress.bin is copied as bootapp.sys to the root directory of the bootable 
+       media as the second file.
+
+
+       In addition to the vxStage1Boot.bin stage 1 boot file, a PXE bootfile can be built.
+       Simply add the following to the above project.
+\cs
+       vxprj build vxStage1Boot.pxe
+\ce
+       vxStage1Boot.pxe is copied as bootrom.pxe in PXE tftp directory.
+       vxWorks_romCompress.bin is copied as bootapp.sys in PXE tftp directory.
+
+    `2) Creating a bootrom images using Workbench.'
+
+        a. If using Workbench, use the following steps to build vxWorks_romCompress.bin
+
+\cs
+        -> File
+          -> New
+            -> Other
+              -> VxWorks Image Project
+                 Specify your project name in "Project name:" field
+                -> Next
+                   Specify "BSP:" (example: itl_atom)
+                   Specify "Tool chain:" as gnu
+                  -> Next
+                    -> Next
+                       Specify "Profile:" as PROFILE_BOOTAPP_BASIC
+                      -> Next
+                        -> Finish
+
+        -> Right click on project just created
+          -> Build Options
+            -> Set Active Build Spec...
+              -> default_romCompress
+
+        -> Right click on project just created
+          -> Edit Kernel Configuration
+            -> Click on Bundles tab
+              -> Add one of the following bundles:
+                 "Multi Stage Boot Fast Reboot bundle" (BUNDLE_MSB_FAST_REBOOT)
+                 -- or --
+                 "Multi Stage Boot Warm Reboot bundle" (BUNDLE_MSB_WARM_REBOOT)
+              -> Add one of the board bundles:
+                 "Intel WADE Bootapp Board bundle" (BUNDLE_WADE_BOOTAPP)
+                 -- or --
+                 "Intel MOONCREEK Bootapp Board bundle" (BUNDLE_MOONCREEK_BOOTAPP)
+                 -- or --
+                 "Intel Nano Bootapp Board bundle" (BUNDLE_NANO_BOOTAPP)
+                 -- or --
+                 "Intel Crownbeach Bootapp Board bundle" (BUNDLE_CROWNBEACH_BOOTAPP)
+                 -- or --
+                 "Intel Cedar Rock Bootapp Board bundle" (BUNDLE_CEDAR_ROCK_BOOTAPP)
+                 -- or --
+                 "Intel Navypier Bootapp Board bundle" (BUNDLE_NAVYPIER_BOOTAPP)
+                 -- or --
+                 "Emerson NITX Bootapp Board bundle" (BUNDLE_NITX_BOOTAPP)
+                 -- or --
+                 "Intel Crownbay Bootapp Board bundle" (BUNDLE_CROWNBAY_BOOTAPP)
+                 -- or --
+                 "Intel Norco Bootapp Board bundle" (BUNDLE_NORCO_BOOTAPP)
+                 -- or --
+                 "Intel Bayley Bay Bootapp Board bundle" (BUNDLE_BAY_TRAIL_BOOTAPP)
+                 
+        -> Right click on project just created
+          -> Properties
+            -> Build Properties
+              -> Click on Variables tab
+                -> Modify ROM_SIZE to 00200000
+                -> Modify ROM_TEXT_ADRS to 00408000
+                  -> OK
+
+        -> Right click on "vxWorks.bin (default_romCompress)"
+          -> Build Target
+\ce
+        b. Use the following steps to build vxStage1Boot.bin
+\cs
+        -> Right click on project from above
+          -> New
+            -> Build Target
+               Specify "Build target name:" as vxStage1Boot.bin
+              -> Finish
+
+        -> Right click on "vxStage1Boot.bin (default_romCompress)"
+          -> Build Target
+\ce
+       vxStage1Boot.bin is copied as bootrom.sys to the root directory of the bootable media first.
+       Now vxWorks_romCompress.bin is copied as bootapp.sys to the root directory of the bootable 
+       media as the second file.
+
+
+        c. Use the following steps to build vxStage1Boot.pxe
+\cs
+        -> Right click on project from above
+          -> New
+            -> Build Target
+               Specify "Build target name:" as vxStage1Boot.pxe
+              -> Finish
+
+        -> Right click on "vxStage1Boot.pxe (default_romCompress)"
+          -> Build Target
+\ce
+       vxStage1Boot.pxe is copied as bootrom.pxe in PXE tftp directory.
+       vxWorks_romCompress.bin is copied as bootapp.sys in PXE tftp directory.
+
+    `3) NOTES'
+
+        BUNDLE_MSB_WARM_REBOOT requires that neither the bootrom nor the VxWorks kernel
+        shall touch the UHCI or EHCI devices. This implies that all USB related components
+        must be removed from both the bootrom project and VxWorks kernel project.
+\cs
+            vxprj component remove INCLUDE_USB
+            vxprj component remove INCLUDE_UHCI
+            vxprj component remove INCLUDE_UHCI_INIT
+            vxprj component remove INCLUDE_EHCI
+            vxprj component remove INCLUDE_EHCI_INIT
+            vxprj component remove INCLUDE_SYS_WARM_USB
+\ce
+        When BUNDLE_MSB_WARM_REBOOT is used, and ACPI is included in either the bootrom or
+        VxWorks kernel, make sure the BIOS does `not' enable automatic handover to the OS.
+        ACPI touches all devices whether or not drivers for the devices are loaded. When
+        hand-off to OS for EHCI is enabled, the BIOS would lose control over the EHCI the moment
+        ACPI discovers the EHCI devices. VxWorks itself does a hand-off from the BIOS to the OS
+        if USB device drivers are included, so the BIOS setting is not required.
+        Most BIOS's do not have this setting, so this can be ignored.
+        To disable automatic handover if your BIOS have the setting present, enter the BIOS and
+        change the following setting:
+\cs
+            "Advanced"
+                --> "USB Configuration"
+                    --> "BIOS EHCI Hand-Off" set to [Disabled]
+\ce
+
+\"--------------------------------------------------------------------------------
+\sh 3.8 Creating a VIP/VxWorks kernel image
+\"--------------------------------------------------------------------------------
+
+There are two ways to create a VIP/VxWorks kernel that can be loaded via a
+bootrom/BootApp. The first is to do it via a VxWorks Development Shell using the
+`vxprj' facility. The second way is to use Workbench.
+
+`1) Creating a VxWorks kernel image using the vxprj facility.'
+
+Open a VxWorks Development Shell in the project directory "$WIND_BASE/target/proj".
+
+Now run the following commands to create your kernel project directory:
+
+   `To create a VxWorks kernel for the Intel Wade CRB:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_wade_gnu
+    vxprj bundle add itl_wade_gnu/itl_wade_gnu.wpj BUNDLE_WADE
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_WADE itl_atom gnu itl_wade_gnu
+\ce
+
+   `To create a VxWorks kernel for the Intel Mooncreek CRB:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_mooncreek_gnu
+    vxprj bundle add itl_mooncreek_gnu/itl_mooncreek_gnu.wpj BUNDLE_MOONCREEK
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_MOONCREEK itl_atom gnu itl_mooncreek_gnu
+\ce
+
+   `To create a VxWorks kernel for the Intel Nano CRB:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_nano_gnu
+    vxprj bundle add itl_nano_gnu/itl_nano_gnu.wpj BUNDLE_NANO
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_NANO itl_atom gnu itl_nano_gnu
+\ce
+
+   `To create a VxWorks kernel for the Intel Crownbeach CRB:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_crownbeach_gnu
+    vxprj bundle add itl_crownbeach_gnu/itl_crownbeach_gnu.wpj BUNDLE_CROWNBEACH
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_CROWNBEACH itl_atom gnu itl_crownbeach_gnu
+\ce
+
+   `To create a VxWorks kernel for the Intel Navypier CRB:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_navypier_gnu
+    vxprj bundle add itl_navypier_gnu/itl_navypier_gnu.wpj BUNDLE_NAVYPIER
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_NAVYPIER itl_atom gnu itl_navypier_gnu
+\ce
+
+   `To create a VxWorks kernel for the Intel Cedar Rock CRB:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_cedar_rock_gnu
+    vxprj bundle add itl_cedar_rock_gnu/itl_cedar_rock_gnu.wpj BUNDLE_CEDAR_ROCK
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_CEDAR_ROCK itl_atom gnu itl_cedar_rock_gnu
+\ce
+
+   `To create a VxWorks kernel for the NITX-300/315:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_nitx_gnu
+    vxprj bundle add itl_nitx_gnu/itl_nitx_gnu.wpj BUNDLE_NITX
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_NITX itl_atom gnu itl_nitx_gnu
+\ce
+
+   `To create a VxWorks kernel for the Intel Crownbay CRB:'
+
+\cs
+    vxprj create -force itl_atom gnu itl_crownbay_gnu
+    vxprj bundle add itl_crownbay_gnu/itl_crownbay_gnu.wpj BUNDLE_CROWNBAY
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_CROWNBAY itl_atom gnu itl_crownbay_gnu
+\ce
+
+\cs
+    vxprj create -force itl_atom gnu itl_norco_gnu
+    vxprj bundle add itl_norco_gnu/itl_norco_gnu.wpj BUNDLE_NORCO
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_NORCO itl_atom gnu itl_norco_gnu
+\ce
+
+\cs
+    vxprj create -force itl_atom gnu itl_bayleybay_gnu
+    vxprj bundle add itl_baleybay_gnu/itl_bayleybay_gnu.wpj BUNDLE_BAY_TRAIL
+
+    above can be done in one step
+
+    vxprj create -force -b BUNDLE_BAY_TRAIL itl_atom gnu itl_bayleybay_gnu
+\ce
+
+Add extra desired bundles and/or components that you want to include into your
+VIP/VxWorks project.
+
+Now build your project. It can be done by entering your project directory and then
+simply typing "vxprj build". This will automatically use the WPJ file from the
+current project directory.
+
+Alternatively you can execute the build command from the same directory the project
+creation commands were given: "$WIND_BASE/target/proj"
+
+    `To build Intel Wade CRB VxWorks kernel image:'
+
+\cs
+    vxprj build itl_wade_gnu/itl_wade_gnu.wpj
+\ce
+
+    `To build Intel Mooncreek CRB VxWorks kernel image:'
+
+\cs
+    vxprj build itl_mooncreek_gnu/itl_mooncreek_gnu.wpj
+\ce
+
+    `To build Intel Nano CRB VxWorks kernel image:'
+
+\cs
+    vxprj build itl_nano_gnu/itl_nano_gnu.wpj
+\ce
+
+    `To build Intel Crownbeach CRB VxWorks kernel image:'
+
+\cs
+    vxprj build itl_crownbeach_gnu/itl_crownbeach_gnu.wpj
+\ce
+
+    `To build Intel Navypier CRB VxWorks kernel image:'
+
+\cs
+    vxprj build itl_navypier_gnu/itl_navypier_gnu.wpj
+\ce
+    `To build NITX-300/315 VxWorks kernel image:'
+\cs
+    vxprj build itl_nitx_gnu/itl_nitx_gnu.wpj
+\ce
+    `To build Intel Crownbay CRB VxWorks kernel image:'
+\cs
+    vxprj build itl_crownbay_gnu/itl_crownbay_gnu.wpj
+\ce
+
+    `To build Intel Norco Kit VxWorks kernel image:'
+\cs
+    vxprj build itl_norco_gnu/itl_norco_gnu.wpj
+\ce
+    `To build Intel Bayley Bay CRB VxWorks kernel image:'
+\cs
+    vxprj build itl_bayleybay_gnu/itl_bayleybay_gnu.wpj
+\ce
+
+
+`2) Creating a VxWorks kernel image using Workbench.'
+
+Use the following steps to build VxWorks kernel image
+
+\cs
+    -> File
+      -> New
+        -> Other
+          -> VxWorks Image Project
+             Specify your project name in "Project name:" field
+            -> Next
+               Specify "BSP:" itl_atom
+               Specify "Tool chain:" as gnu
+              -> Next
+                 Tick SMP support if desired and supported by your CRB
+                 Tick other available options if desired
+                -> Next
+                   Leave profile on default (no profile)
+                  -> Next
+                    -> Finish
+
+    -> Right click on project just created
+      -> Edit Kernel Configuration
+        -> Click on Bundles tab
+          -> Add one of the following bundles:
+             "Intel Wade Board Bundle" (BUNDLE_WADE)
+             -- or --
+             "Intel Mooncreek Board Bundle" (BUNDLE_MOONCREEK)
+             -- or --
+             "Intel Nano Board Bundle" (BUNDLE_NANO)
+             -- or --
+             "Intel Crownbeach Board Bundle" (BUNDLE_CROWNBEACH)
+             -- or --
+             "Intel Navypier Board Bundle" (BUNDLE_NAVYPIER)
+             -- or --
+             "Intel Cedar Rock Board Bundle" (BUNDLE_CEDAR_ROCK)
+             -- or --
+             "Emerson NITX Board bundle" (BUNDLE_NITX)
+             -- or --
+             "Intel Crownbay Board bundle" (BUNDLE_CROWNBAY)
+             -- or --
+             "Intel Norco Board bundle" (BUNDLE_NORCO)
+             -- or --
+             "Intel Bayley Bay Board bundle" (BUNDLE_BAY_TRAIL)
+             -- and --
+              Add "standalone kernel shell" if desired (BUNDLE_STANDALONE_SHELL)
+
+
+    -> Right click on "vxWorks (default)"
+      -> Build Target
+\ce
+
+    vxWorks should be copied to a location accessible by the bootrom/BootApp.
+
+
+`3) NOTES'
+
+When running on a CRB that has Hyper-threading enabled, and it is indicated as supported
+by this BSP, then also add the appropriate SMT bundle if desired:
+
+For detailed information about SMT (Simultaneous multithreading), please refer to the
+\tb VxWorks Programmer's Guide: Architecture Supplement
+
+\cs
+    -> Right click on your project
+      -> Edit Kernel Configuration
+        -> Click on Bundles tab
+          -> Add one of the following bundles:
+             "Intel Cedar Rock SMT Board Bundle" (BUNDLE_CEDAR_ROCK_SMT)
+             -- or --
+             "Intel Mooncreek SMT Board Bundle" (BUNDLE_MOONCREEK_SMT)
+             -- or --
+             "Intel Bayley Bay SMT Board Bundle" (BUNDLE_BAY_TRAIL_SMT)
+\ce
+
+When using a multi-stage BootApp to load VxWorks, vxWorks and bootrom must apply the same
+multi-stage boot bundle selections (BUNDLE_MSB_FAST_REBOOT or BUNDLE_MSB_WARM_REBOOT) as the BootApp.
+
+    `Adding the required bundle via VxWorks Development shell'
+
+    Change directory to your project directory "$WIND_BASE/target/proj/<projectDir>"
+\cs
+    vxprj bundle add BUNDLE_MSB_FAST_REBOOT
+    -- or --
+    vxprj bundle add BUNDLE_MSB_WARM_REBOOT
+\ce
+
+    Now rebuild your project
+\cs
+    vxprj build
+\ce
+
+    `Adding the required bundle via Workbench'
+
+\cs
+    -> Right click on your project
+      -> Edit Kernel Configuration
+        -> Click on Bundles tab
+          -> Add one of the following bundles:
+             "Multi Stage Boot Fast Reboot bundle" (BUNDLE_MSB_FAST_REBOOT)
+             -- or --
+             "Multi Stage Boot Warm Reboot bundle" (BUNDLE_MSB_WARM_REBOOT)
+\ce
+
+    Now rebuild your project
+\cs
+    -> Right click on "vxWorks (default)"
+      -> Build Target
+\ce
+
+\"--------------------------------------------------------------------------------
+\sh 3.9 Booting VxWorks via PXE
+\"--------------------------------------------------------------------------------
+
+It is possible to boot VxWorks via the network using PXE (the Preboot
+eXecution Environment). PXE support may be provided either by the BIOS
+on motherboards with integrated ethernet ports, or by standalone
+ethernet adapters with PXE ROMs. Many of the Intel PRO/100 and
+PRO/1000 cards (supported by the fei and gei drivers) with management
+features include PXE ROM support. The advantage to using PXE is that
+no boot hard disk is necessary.
+
+Another alternative is to use the publicly available gPXE bootloader
+(http://etherboot.org/wiki/) for PXE boot.  If BIOS provided or
+ethernet adapter provided PXE ROM does not work well with VxWorks
+BootApp, gPXE can be tried.  Both single-stage and multi-stage PXE
+BootApps were tested with the latest gPXE as of 04/08/2011 (version
+1.0.1+).
+
+The vxWorks_romCompress.pxe (single-stage BootApp) or vxStage1Boot.pxe
+(multi-stage BootApp) loader is virtually identical to the normal
+vxWorks_romCompress.bin or vxStage1Boot.bin, except that it has an
+extra block of padding prepended to it. When booting from disk, the
+vxld.bin loader is normally loaded by the BIOS at address 0x7C00. It
+then in turn loads the BootApp at address 0x8000 and starts it
+running. By contrast, when booting with PXE, the BootApp is loaded
+directly at address 0x7C00 by the PXE ROM. A leading block of 1024 NOP
+instructions is therefore used to force the actual romInit() entry
+point to fall at address 0x8000, just as it would as if it had been
+loaded from disk.
+
+For multi-stage PXE boot, first stage boot loader can use PXE's
+underyling UNDI (Universal Network Device Interface) API to load the
+second stage bootapp.sys.  'int 0x1A' PXE BIOS interface is used to
+determine whether BootApp has been loaded via PXE. If it is a PXE
+load, "PXENV+" structure is retrieved.  Next, "!PXE" is retrieved
+(offset from beginning of "PXENV+" structure).  Subsequent
+PXENV_GET_CACHED_INFO PXE API call (using additional information from
+"!PXE") is used to retrieve the TFTP host and TFTP directory
+information.  Finally, PXENV_TFTP_READ_FILE PXE API call is be used to
+load the second stage bootapp.sys file. First stage boot will only
+support accessing PXE API functions using "!PXE" structure as
+specified above.
+
+A single-stage vxWorks_romCompress.pxe loader can be created by the following
+command (pxeBoot.bin is in the BSP directory):
+
+\cs
+    cat pxeBoot.bin vxWorks_romCompress.bin > vxWorks_romCompress.pxe
+\ce
+
+Alternatively, the following command can be used from the project
+directory:
+
+\cs
+    vxprj build vxWorks_romCompress.pxe
+\ce
+
+A multi-stage vxStage1Boot.pxe loader can be created by the following
+command (pxeBoot.bin is in the BSP directory):
+
+\cs
+    cat pxeBoot.bin vxStage1Boot.bin > vxStage1Boot.pxe
+\ce
+
+Alternatively, the following command can be used from the project
+directory:
+
+\cs
+    vxprj build vxStage1Boot.pxe
+\ce
+
+PXE booting requires the use of a DHCP and TFTP server. When the PXE
+ROM starts up, it will use DHCP to discover an IP address and the path
+for the BootApp file. Generally, the PXE ROM assumes that the DHCP and
+TFTP servers will be running on the same machine. Exactly how you
+configure the DHCP and TFTP servers will depend on what software is
+used. DHCP and TFTP support is available for most UNIX/Linux/BSD
+systems, as well as for Microsoft Windows (R). The following sample
+setup instructions explain how to configure the open source ISC DHCP
+server running on a FreeBSD system.
+
+Assume that your client machine is on the 10.0.0.0/32 network, and
+that your DHCP/TFTP server's IP address is 10.0.0.1. When the PXE
+client is started up, the PXE ROM should display the station address
+of the ethernet port. We will assume the address is 00:00:E8:01:02:03,
+and that we want to assign the target an IP address of 10.0.0.3.
+Given this, we need to create a dhcpd.conf file as follows:
+
+\cs
+
+    # dhcpd.conf
+    #
+    # Sample PXE boot configuration file for ISC dhcpd
+    #
+
+    ddns-update-style none;
+
+    subnet 10.0.0.0 netmask 255.255.255.0 {
+      range 10.0.0.3 10.0.0.3;
+      deny unknown-clients;
+      host vxWorks_pentium_target {
+        hardware ethernet 00:00:e8:01:02:03;
+      }
+      option routers 10.0.0.1;
+      option broadcast-address 10.0.0.255;
+      filename "/bootrom.pxe";
+      default-lease-time 600;
+      max-lease-time 7200;
+    }
+
+\ce
+
+Start the DHCP server with the following command, as superuser:
+
+\cs
+    # dhcpd -cf /path/to/dhcpd.conf
+\ce
+
+Next, edit the /etc/inetd.conf file to enable the TFTP service, and
+insure inetd is started. The enable inetd, edit the /etc/rc.conf file
+and add a line that says 'inetd_enable="YES"' then run the following
+commands:
+
+\cs
+    # sh /etc/rc.d/inetd stop
+    # sh /etc/rc.d/inetd start
+\ce
+
+Lastly, create a /tftpboot directory.  For single-stage BootApp, copy
+vxWorks_romCompress.pxe as bootrom.pxe in /tftpboot directory.  For
+multi-stage BootApp, copy vxStage1Boot.pxe as bootrom.pxe in /tftpboot
+directory and also copy vxWorks_romCompress.bin as bootapp.sys in
+/tftpboot directory.
+
+Once this setup has been done, reboot the PXE client system. It should
+display output similar to the following:
+
+\cs
+CLIENT MAC ADDR: 00 00 E8 01 02 03  GUID: xxxxxxxx xxxx xxxx xxxx xxxxxxxxxxxx
+CLIENT IP: 10.0.0.3  MASK: 255.255.255.0  DHCP IP: 10.0.0.1
+GATEWAY IP: 10.0.0.1
+TFTP...
+\ce
+
+Very shortly after this output appears, the VxWorks BootApp should
+start up and the BootApp startup banner should be displayed. At this
+point, you can enter the desired VxWorks boot parameters and use the
+BootApp to load a VxWorks image.
+
+Important notes:
+
+- PXE is a 16-bit real mode environment. Consequently, boot
+  applications downloaded via PXE are limited in that they must be
+  able to start up in 16-bit real mode, and they must be less than
+  640K in size. The VxWorks vxWorks_romCompress.bin (single-stage
+  BootApp) and vxStage1Boot.bin (multi-stage bootApp) images meet
+  these requirements, however standalone VxWorks images might not.
+
+- The PXE environment also provides a universal API for accessing the
+  underlying ethernet device, however VxWorks has no support for this
+  feature. This means that while you can download the VxWorks BootApp
+  via any PXE-enabled ethernet device, a native driver for the
+  ethernet device must be available in VxWorks in order for the
+  BootApp to subsequently download a VxWorks image (or for the
+  downloaded VxWorks image to be able to use the ethernet port).
+
+\"--------------------------------------------------------------------------------
+\sh 3.10 Using GRUB to boot VxWorks 
+\"--------------------------------------------------------------------------------
+
+NOTE: Not test on GRUB2 bootloader
+
+Via GRUB we can boot VxWorks directly, to build a GRUB bootable VxWorks image
+simply define GRUB_MULTIBOOT in the itl_atom BSP's Makefile or use command
+\cs
+	vxprj component add GRUB_MULTIBOOT
+\ce
+
+If use compressed bootrom ELF file(vxWorks_romCompress), change ROM_TEXT_ADRS
+and ROM_SIZE to Grub's configuration in itl_atom BSP's Makefile before create
+VxWorks project.
+
+Using GRUB to boot VxWorks reduces boot time. The VxWorks GRUB implementation
+adjusts sysPhysMemTop to exploit reading multiboot information structures.
+The GRUB implementation of VxWorks adheres to the Multiboot Specification. The
+Multiboot Specification information passed to the operating system were acquired  
+from the BIOS.
+
+When load BootApp, copy ELF file "default_romCompress/vxWorks" or compressed file
+"default_romCompress/vxWorks_romCompress" to GRUB root directory on bootable media.
+When load VxWorks image, copy ELF file "default/vxWorks" to GRUB root directory.
+BootApp does not support loading a VxWorks image built with GRUB_MULTIBOOT 
+defined.
+
+Edit grub commandline like:
+/cs
+	multiboot /vxWorks sysbootline:gei(0,0)host:vxWorks h=90.0.0.3 e=90.0.0.50 u=target
+/ce
+then 
+
+If do not pass boot line though option "sysbootline:" in GRUB boot line, the GRUB
+ VxWorks image uses the default boot line defined in config.h. Use the 
+DEFAULT_BOOT_LINE component in your project to change as required. 
+The GRUB VxWorks image does not support "warm" boot. reboot/CTRL-X methods
+all force "cold" boot.
+The GRUB VxWorks image does not support FAST_REBOOT.
+
+For more information on GRUB and the Multiboot Specification please refer to:
+
+http://www.gnu.org/software/grub/
+http://www.gnu.org/software/grub/manual/multiboot/multiboot.html
+
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 4.0 FEATURES
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+This section describes all features of the board, supported or not.
+It documents all configurations of the board and the interaction between
+features and configuration items.
+
+\"--------------------------------------------------------------------------------
+\sh 4.1 List of Hardware Features (Intel(R) Atom REVQ board)
+\"--------------------------------------------------------------------------------
+
+\ts
+Hardware Interface  | Controller  | Driver/Component                | Status
+-----------------------------------------------------------------------------
+UART:0              | PCIe        | vxbNs16550Sio.c                 | SUPPORTED
+1GB-ETHERNET:0      | PCIe        | gei825xxVxbEnd.c                | SUPPORTED
+1GB-ETHERNET:0      | PCIe        | rtl8169VxbEnd.c                 | SUPPORTED
+1GB-ETHERNET:0      | on-chip     | vxbIntelTopcliffEnd.c           | SUPPORTED
+SATA                | on-chip     | vxbAhciStorage.c                | SUPPORTED
+PATA                | on-chip     | vxbPiixStorage.c                | SUPPORTED
+GRAPHICS            | on-chip     | vxbM6845Vga.c                   | SUPPORTED
+PS2                 | on-chip     | vxbI8042Kbd.c                   | SUPPORTED
+TIMER               | on-chip     | vxbI8253Timer.c                 | SUPPORTED
+TIMESTAMP           | on-chip     | vxbIntelTimestamp.c             | SUPPORTED
+RTC                 | on-chip     | vxbMc146818Rtc.c                | SUPPORTED
+USB2-HOST           | on-chip     | USB EHCI driver                 | SUPPORTED
+SD-CARD             | on-chip     | vxbSdhcStorage.c                | SUPPORTED
+USB2-DEVICE         | on-chip     | n/a                             | UNSUPPORTED
+USB1-HOST           | on-chip     | USB UHCI driver                 | SUPPORTED
+VIDEO-DECODE        | on-chip     | n/a                             | UNSUPPORTED
+AUDIO               | on-chip     | n/a                             | UNSUPPORTED
+LPC                 | on-chip     | n/a                             | UNSUPPORTED
+\te
+
+\"--------------------------------------------------------------------------------
+\sh 4.2 Feature Interactions
+\"--------------------------------------------------------------------------------
+Refer to the board vendor's documentation.
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 5.0 HARDWARE DETAILS
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+This section documents the details of the device drivers and board hardware elements.
+Problems interacting with a CRB or getting it to boot are discussed in this section.
+
+\"--------------------------------------------------------------------------------
+\sh 5.1 Intel(R) Crown Bay specific issues
+\"--------------------------------------------------------------------------------
+
+1. Intel Crown Bay board Topcliff IOH only supports AHCI SATA.
+
+\"--------------------------------------------------------------------------------
+\sh 5.2 NITX-300/315 specific issues
+\"--------------------------------------------------------------------------------
+
+1. UART:
+The default shell is serial port. There are four UART ports integrated in the Topcliff,
+one is a full 9-pin RS232 connecting to a COM header P7. The others are 3-pin RS232
+connection to CH7317A-BF. There is no serial port in the panel, but parallel lines
+on the board are available. See 6806800L71A_NITX_300_315_IU_Preliminary.pdf
+Full Wire RS232 Header
+ Pin     Signal
+  1      COM1A_DCD
+  2      COM1A_RXD
+  3      COM1A_TXD
+  4      COM1A_DTR
+  5      GND
+  6      COM1A_DSR
+  7      COM1A_RTS
+  8      COM1A_CTS
+  9      COM1A_RI-
+
+2. PC Concole:
+BIOS Information:
+   BIOS Vendor             American Megatrends
+   Core Version            4.6.3.7
+   Project Version         NH1E1B07
+   Build Date              01/13/2011 09:52:01
+
+With no 8042 controller is on NITX-300/315 board, only USB keyboard can be used.  
+This version of BIOS does not enable legacy USB support either, so native USB
+keyboard driver is needed and 8042 driver must be removed otherwise the board
+cannot boot up. To enable PC console, include the following components and
+rebuild the project.
+
+\cs
+DRV_KBD_NONE 
+INCLUDE_PC_CONSOLE 
+INCLUDE_OHCI_INIT 
+INCLUDE_EHCI_INIT 
+INCLUDE_USB_GEN2_KEYBOARD_BOOTSHELL_ATTACH                
+INCLUDE_USB_GEN2_KEYBOARD_INIT  
+\ce
+or
+\cs
+DRV_KBD_NONE 
+INCLUDE_PC_CONSOLE 
+INCLUDE_OHCI_INIT 
+INCLUDE_EHCI_INIT 
+INCLUDE_USB_GEN2_KEYBOARD_SHELL_ATTACH                
+INCLUDE_USB_GEN2_KEYBOARD_INIT  
+INCLUDE_SHELL
+\ce
+
+To attach the bootAppShell (in bootrom) to the usb keyboard, define the macro
+INCLUDE_USB_KEYBOARD_BOOTSHELL_ATTACH; To attach the target shell (in normal vxWorks)
+to the usb keyboard, define the macro INCLUDE_USB_KEYBOARD_SHELL_ATTACH. These
+2 macros can not be defined simultaneously.
+
+3. NVRAM:
+There is no onboard NVRAM. To use NVRAM, an USB flash disk or a SATA disk needs
+to be inserted to the board and component INCLUDE_SYS_WARM_USB or INCLUDE_SYS_WARM_AHCI
+needs to be added and rebuild the project.
+
+\"--------------------------------------------------------------------------------
+\sh 5.3 Cedar Rock Board specific issues
+\"--------------------------------------------------------------------------------
+
+The Cedar Rock platform has a faulty BIOS MP Table, so ACPI is needed to get
+the correct mapping of the IRQs.
+ 
+The default configuration for CedarRock includes ACPI, and does not require
+multi-stage boot. It does not support a NVRAM file by default, since that
+requires the inclusion of the USB stack which grows the boot image size beyond
+the available space in the bootrom. Since NVRAM is not included by default it
+implies that the desired default boot line has to be set using the parameter:
+ 
+\cs
+    vxprj parameter set DEFAULT_BOOT_LINE "fei(0,0)host:vxWorks h=90.0.0.3 e=90.0.0.50 u=target"
+\ce
+
+If NVRAM support in the BootApp is also desired, the multi-stage boot mechanism is
+needed to allow both the USB stack and ACPI support in the BootApp.
+
+Please refer to the sections `Multi-stage BootApp requirements and usage' and
+`Creating Multi-Stage bootable images' in this document for further instructions
+to add multi-stage boot support.
+
+\"--------------------------------------------------------------------------------
+\sh 5.4 Nano Board specific issues
+\"--------------------------------------------------------------------------------
+
+With the current version of BIOS both AHCI and ATA (legacy IDE) cannot
+be enabled at the same time.  The board will not reboot properly
+sometimes if a reboot is done prior to the completion of
+AHCI driver initialization process.  This is true whether in bootrom or
+VxWorks.
+
+\"--------------------------------------------------------------------------------
+\sh 5.5 Bayley Bay Board specific issues
+\"--------------------------------------------------------------------------------
+
+At the time of this release issues were seen with the on board serial port on the 
+Bayley Bay CRB. To work around this issue the vxWorks image was built to include 
+INCLUDE_IPTELNETS and PC_CONSOLE by default as part of the bundle. This allows 
+the user to telnet in once the vxWorks image is up and running,or to use the video 
+port to gain access to the vxWorks shell. Serial interface testing could not be
+performed. 
+
+This issue has been reported back to Intel.
+
+Bayley Bay baord used in validation: Baley Bay EV/CRB FAB3 Rev 03
+
+NOTE: A gigabit desktop adapter (not provided) was used in PCI-E Inline 
+      Slot, Port 3 to establish a network connection. 
+
+The Bayley Bay required a change of the BIOS to support booting via USB.
+
+At the time of testing the following BIOS was used in validating the Bayley Bay
+CRB:
+
+BIOS Vendor: American Megatrends (AMI)
+Core Version: 5.008
+Compliancy: UEFI 2.3; PI 1.2
+Project Version: 0ACCT 0.03
+Build Date and Time: 07/19/2013 14:44:30
+
+Microcode Patch: 213
+
+CSM16 Module Version: 07.69
+
+Please refer to Intel for all BIOS updates.
+
+BIOS Options Modified from Default Settings:
+ 
+ (1) 'ENABLE' ACPI Auto Configuration
+ (2) 'DISABLE' Console redirection
+ (3) 'ENABLE' CSM Support
+      - Boot Option Filter: 'UEFI and Legacy'
+      - Video: 'Legacy Only'
+ (4) Chipset USB Configuration
+      - USB OTG Support: 'DISABLE'
+      - USB VBUS: 'ON'
+
+NOTE: AMI BIOS does produce a valid MP Table so use of ACPI is optional.
+
+NOTE: Intel(R) Hyper-Threading Technology is not supported on current Bayley Bay.
+
+\"--------------------------------------------------------------------------------
+\sh 5.6 Jumpers & Switches
+\"--------------------------------------------------------------------------------
+
+Please refer to the board vendor's documentation.
+
+\"--------------------------------------------------------------------------------
+\sh 5.7 Memory Maps
+\"--------------------------------------------------------------------------------
+Refer to `VxWorks Memory Layout' section in <VxWorks Architecture Supplement>
+and the <VxWorks BSP Developers Guide> for information regarding memory mapping.
+
+\"--------------------------------------------------------------------------------
+\sh 5.8 Interrupts
+\"--------------------------------------------------------------------------------
+All ISA interrupts are external to the CPU and are routed through 
+the ISA interrupt prioritization hardware. This hardware is comprised 
+of two 82C59 PICs(INCLUDE_PIC_MODE). There are 16 ISA interrupts and 
+interrupt priority levels numbered 0 through 15. The mapping between
+interrupt numbers and priority levels is not necessarily one to one.
+The motherboard hardware determines the mapping of interrupt request 
+lines (IRQ) to priority levels. The hardware should adhere to the 
+standard ISA assignments:
+
+
+            IRQ         Priority
+            ---         --------
+             0              0
+             1              1
+             2              2
+             3             11
+             4             12
+             5             13
+             6             14
+             7             15
+             8              3
+             9              4
+            10              5
+            11              6
+            12              7
+            13              8
+            14              9
+            15             10
+
+IRQs 0 - 7 are handled by PIC1 and IRQs 8 - 15 by PIC2.  PIC2 interrupts are
+cascaded into PIC1 at IRQ2 which is reflected in the above table.
+The Fully Nested Mode is used in the default configuration of this BSP.
+
+\is
+\i `Fully Nested Mode.'
+In this mode, interrupt requests are ordered in priority
+from 0 through 7 (0 is the highest).  When an interrupt is acknowledged the
+highest priority request is determined and its vector is placed on the bus.
+Additionally, a bit of the Interrupt Service (IS) register is set.  This bit
+remains set until the microprocessor issues an EOI command immediately before
+returning from the service routine.  While the IS bit is set, all further
+interrupts of the same or lower priority are inhibited, while higher level
+interrupts are allowed.  The PICs in a PC typically operate in this mode
+(normal nested mode).  In this mode, while the slave PIC is being
+serviced by the master PIC, the slave PIC blocks all higher priority
+interrupt requests.  Alternatively, to allow interrupts of a higher priority,
+enable the Special Fully Nested Mode.
+
+\i `Special Fully Nested Mode' (PIC_SPECIAL_FULLY_NESTED_MODE):
+This mode is similar to the Fully Nested Mode with the following exceptions:
+1) When an interrupt request from a slave PIC is in service, the slave is
+not locked out from the master's priority logic and further interrupt
+requests from higher priority IRs within the slave will be recognized by
+the master and will initiate interrupts to the processor.  2) When exiting
+the interrupt service routine, the software must check whether or not the
+interrupt serviced was the only interrupt request from the slave.  If it
+was the only interrupt request, a non-specific EOI is sent to the master.
+If not, no EOI is sent.
+
+The PIC(8259A) IRQ0 is hard wired to the PIT(8253) channel 0 in a PC
+motherboard.  IRQ0 is the highest priority in the 8259A interrupt
+controller.  Thus, the system clock interrupt handler blocks all lower
+level interrupts.  This may cause a delay of the lower level interrupts in
+some situations even though the system clock interrupt handler finishes its
+job without any delay.  This is quite natural from the hardware point
+of view, but may not be ideal from the application software standpoint.
+The following modes are supplied to mitigate this situation by providing the
+corresponding configuration macros in the BSP.  The three modes are
+mutually exclusive.
+
+\i `Early EOI Issue in IRQ0 ISR' (PIC_EARLY_EOI_IRQ0):
+In this mode, the EOI is issued before the IRQ0 system clock interrupt
+service routine starts the kernel work.  This lowers the IRQ0 ISR blocking
+level to the next lower level.  If no IRQs are in service, the next lower
+level is the lowest level.  If IRQn is in service, the next lower level
+corresponds to the next lower priority.  As a result, the kernel work in
+the system clock interrupt service routine can be interrupted by an
+interrupt with a higher priority than the blocking level.
+
+\i `Special Mask Mode in IRQ0 ISR' (PIC_SPECIAL_MASK_MODE_IRQ0):
+In this mode, the Special Mask Mode is used in the IRQ0 system clock
+service routine.  This lowers the blocking level to the specified level
+(currently hard coded to the lowest level in i8259Intr.c).
+
+\i `Automatic EOI Mode' (PIC_AUTO_EOI):
+This mode provides no nested multi-level interrupt structure in PIC1.
+The EOI command is automatically sent to the master PIC at the end of the
+interrupt acknowledge cycle.  Thus, no software intervention is needed.
+
+P6 (PentiumPro, II, III) and P7 (Pentium4) family processor has new interrupt
+controller APIC/xAPIC (Advanced Programmable Interrupt Controller) which
+consists of Local APIC/xAPIC (on-chip) and IO APIC/xAPIC (on chipset).
+They are used in two additional interrupt modes that are configurable in BSP.
+
+\i `Virtual Wire Mode': One of three interrupt modes defined by the MP
+specification.  In this mode, interrupts are generated by the 8259A
+equivalent PICs, but delivered to the BSP by an APIC that is programmed to
+act as a "virtual wire"; that is, the APIC is logically indistinguishable
+from a hardware connection.  This is a uniprocessor compatibility mode.
+If the Local APIC exist in the processor indicated by APIC feature flag
+in the CPUID, this mode can be configured and used.
+To use this mode, include the INCLUDE_VIRTUAL_WIRE_MODE component in your VxWorks
+VIP or Workbench project.
+\cs
+    vxprj component add INCLUDE_VIRTUAL_WIRE_MODE
+\ce
+
+\ss
+NOTE: Under current implementation, if image built for INCLUDE_VIRTUAL_WIRE_MODE
+      the Bootrom should be built using the same mode.
+\se
+
+\i `Symmetric IO Mode': One of three interrupt modes defined by the MP
+specification.  In this mode, the APICs are fully functional, and
+interrupts are generated and delivered to the processors by the APICs.
+Any interrupt can be delivered to any processor.  This is the only
+multiprocessor interrupt mode.  If the Local APIC exist in the processor
+indicated by APIC feature flag in the CPUID and the IO APIC in the chipset
+is available, this mode can be configured and used.  The PIRQ[n] is
+directly handled by the IO APIC in this mode.
+To use this mode, include the INCLUDE_SYMMETRIC_IO_MODE component in your vxprj 
+or Workbench project.
+
+\ss
+NOTE: Under current implementation, if image built for symmetric IO mode, the
+      Bootrom should be built using the same mode.
+
+NOTE: For SMP one must include the INCLUDE_SYMMETRIC_IO_MODE component, thus
+      for SMP based images the Bootrom should be built by including the
+      INCLUDE_SYMMETRIC_IO_MODE component as well.
+      One can validate that the proper bootrom is in use by observing the
+      bootrom prompt.
+      SYS_MODEL displayed should be seen with "... SYMMETRIC IO" appended to
+      the description.
+
+NOTE: When moving from UP to an SMP image, or from SMP to UP image, one must
+      perform a "cold" boot.
+
+NOTE: Static configuration of mpApic data table may be performed in this BSP.
+
+      The static configuration table for mpApicData structure, allows for manual
+      configuration of mpApic driver.
+
+      One must be very careful when manually configuring Apics, incorrect data
+      will cause catastrophic errors, including the BSP failing to boot properly.
+
+      The data being manipulated is dependent on the number of cpus involved,
+      interrupt routing tables, etc., basically the general configuration
+      of your specific hardware.
+
+      Access to this capability is obtained by setting "mpBootOp" in hwconf.c.
+
+      MP_MP_STRUCT option is used by default to configure mpApic data structure
+      based off the BIOS's _MP_ data structure (MultiProcessor Specification v1.4).
+      To statically configure the mpApic data structure one sets "mpBootOp" to
+      USR_MP_STRUCT and then one must flush out the staticMpApicData array,
+      defined in sysLib.c, to provide all the information needed in the
+      MP_APIC_DATA structure defined in vxbMpApic.h.
+
+\se
+\ie
+
+For symmetric IO mode configured bootroms it has been found that under some of the
+bios setup utilities that one may need to configure the following options:
+\bs
+ (1) Set options to "Optimal Defaults" and then...
+
+ (2) make sure: MPS configuration -->defaults to MPS 1.4
+
+ (3) make sure: SUPER IO configuration: config SMC 17x Super IO Chipset ---has
+     devices set to disable, (i.e. serial, and LPT)
+\be
+
+\"--------------------------------------------------------------------------------
+\sh 5.9 Serial Configuration
+\"--------------------------------------------------------------------------------
+Default configuration is:
+    Baud Rate: 9600
+    Data: 8 bit
+    Parity: None
+    Stop: 1 bit
+    Flow Control: None
+
+\"--------------------------------------------------------------------------------
+\sh 5.10 Network Configuration
+\"--------------------------------------------------------------------------------
+This BSP provides support for VxBus drivers, including network drivers. The list
+of VxBus network drivers available for PCIe devices includes the following:
+
+\cs
+    INCLUDE_FEI8255X_VXB_END
+    INCLUDE_GEI825XX_VXB_END
+    INCLUDE_RTL8169_VXB_END
+    DRV_VXBEND_INTELTOPCLIFF
+    INCLUDE_END
+\ce
+
+For command line builds using the vxprj facility, add the desired driver.
+ 
+    Example adding the GEI driver:
+\cs
+    vxprj component add INCLUDE_GEI825XX_VXB_END
+\ce
+
+The Intel(R) Pro/1000PT 82572EI Gigabit Ethernet adapter is one of the tested
+PCIe device supported in this release.
+
+The following END and corresponding END2 drivers are supported in this BSP.
+However, only END driver is enabled by default.
+
+\ts
+-------+--------------------------+-----
+Driver | END                      | END2
+-------+--------------------------+-----
+GEI    | INCLUDE_GEI825XX_VXB_END | INCLUDE_GEI825XX_VXB_END2
+-------+--------------------------+-----
+\te
+
+To enable the END2 driver, you should modify as follows:
+
+For project build under Workbench, in the Kernel Configuration Window of your
+created VxWorks Image Project, add INCLUDE_END2 component and corresponding END2
+component, this will un-define END automatically. Then rebuild your project.
+
+\"--------------------------------------------------------------------------------
+\sh 5.11 Devices
+\"--------------------------------------------------------------------------------
+\is
+\i `PC Console'
+This function will use PC monitor as VxWorks console.
+To use these controllers the INCLUDE_PC_CONSOLE component must be included in your
+vxprj or Workbench project.
+Only PS2 keyboard is supported.
+\cs
+    vxprj component add INCLUDE_PC_CONSOLE
+\ce
+
+\i `vxbPiixStorage'
+Vxbus Driver for the IDE/ATA hard disk controller.
+To use this driver, include the INCLUDE_DRV_STORAGE_PIIX component in your
+vxprj or Workbench project.
+\cs  
+    vxprj component add INCLUDE_DRV_STORAGE_PIIX
+\ce
+
+\i `vxbAhciStorage'
+Vxbus Driver for the SATA hard disk controller.  To use this driver,
+include the INCLUDE_DRV_STORAGE_AHCI component in your vxprj or
+Workbench project.
+\cs
+    vxprj component add INCLUDE_DRV_STORAGE_AHCI
+\ce
+
+\i `vxbI8253Timer'
+This library contains a board-independent interface for manipulating the
+timer functions on Intel(R) 8253 and compatible timer chip devices.
+Timer 0 is used as system clock, According to different applications, timer 1,2 has
+different usage.
+
+\i `vxbMc146818Rtc'
+This is the driver for the real time clock (based on the Motorola MC146818).
+
+\i `vxbIntelTimestamp'
+This is the driver for the timestamp on Intel(R) processor. To use the timestamp
+feature, include the DRV_TIMER_IA_TIMESTAMP component in your vxprj or
+Workbench project.
+\cs
+    vxprj component add DRV_TIMER_IA_TIMESTAMP
+\ce
+
+\i `vxbLoApicTimer'
+This library contains routines to manipulate the timer functions on the
+Intel(R) P6 (PentiumPro, II, and III) and P7 (Pentium4) family processor's
+Local APIC/xAPIC Timer with a board-independent interface.
+
+\i `APIC/xAPIC frequency'
+At initialization, the vxbLoApicTimer timer driver calculates the clock
+frequency of the Local APIC/xAPIC Timer only when the APIC_TIMER_CLOCK_HZ 
+parameter is set to 0 (default).  Otherwise, the specified value will be 
+applied as the clock frequency.  If this value is set manually, it must 
+match the actual frequency of the timer hardware to ensure accurate timekeeping.
+Platform specific operating frequencies can only be obtained from the 
+appropriate Intel proprietary documentation. 
+
+This value can be set using workbench or with the vxprj commmand line (VIP):
+
+\cs
+vxprj parameter set APIC_TIMER_CLOCK_HZ 133330000
+\ce
+
+\i `i8259Intr'
+Driver for the Intel(R) 8259A Programmable Interrupt Controller (PIC).
+IRQs 0 - 7 are handled by PIC1 and IRQs 8 - 15 by PIC2.  PIC2 interrupts are
+cascaded into PIC1 at IRQ2 .The Fully Nested Mode is used in the default
+configuration of this BSP.
+
+`NOTE': Note that the following components are `not' supported by this BSP
+\cs
+INCLUDE_ATA
+\ce
+
+replaced by
+\cs
+INCLUDE_DRV_STORAGE_PIIX
+\ce
+
+\ie
+
+\"--------------------------------------------------------------------------------
+\sh 5.12 USB Host Support
+\"--------------------------------------------------------------------------------
+A standard USB EHCI controller is supported in this BSP.
+Please refer to Wind River's USB documents.
+
+\"--------------------------------------------------------------------------------
+\sh 5.13 Boot Devices
+\"--------------------------------------------------------------------------------
+The supported boot devices are:
+
+\ts
+    `gei0'    | - Primary Ethernet (10baseT, 100baseTX, or 1000baseT)
+    `fei0'    | - Intel PRO/100 Ethernet (10baseT, 100baseTX)
+    `tcei0'   | - Topcliff Ethernet (10baseT, 100baseTX, or 1000baseT)
+    `ata0:1'  | - ATA/IDE drive
+    `ata0:1'  | - SATA drive
+    `fs'      | - USB disk
+\te
+
+\"--------------------------------------------------------------------------------
+\sh 5.14 Boot Methods
+\"--------------------------------------------------------------------------------
+The boot methods are affected by the boot parameters. If no password is
+specified, RSH (remote shell) protocol is used.  If a password is specified,
+FTP protocol is used, or, if the flag is set to 0x80, TFTP protocol is used.
+
+\"--------------------------------------------------------------------------------
+\sh 5.15 SD-CARD 
+\"--------------------------------------------------------------------------------
+Intel(R) Crown Bay CRB provides two SD/SDIO/MMC ports. NITX-300/315 provides two 
+SDIO links. Link1 is routed to a microSD slot. Link0 is routed to an inner header.
+To enable SDHC support,include the following components and rebuild the project. 
+\cs
+
+DRV_STORAGE_SDHC
+INCLUDE_DOSFS
+INCLUDE_XBD_BLK_DEV
+INCLUDE_XBD_TRANS
+INCLUDE_DISK_UTIL
+\ce
+When using an SD card for the first time, you should format it as a FAT file system 
+by using
+\cs
+    dosFsVolFormat ("/sd0:1", 0x20, 0);    /@ FAT32 format @/
+\ce
+or
+\cs
+    dosFsVolFormat ("/sd0:1", 0x10, 0);    /@ FAT16 format @/
+\ce
+Now, you can use VxWorks I/O and file system commands to access the SD card device 
+as if it was a disk.  For example, you can copy a vxWorks image from your host to
+the SD card by using file system copy. 
+\cs
+    copy ("vxWorks", "/sd0:1/vxWorks");
+\ce
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 6.0 SPECIAL CONSIDERATIONS
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+This section discuss special features and/or restrictions of boards supported
+by this BSP.
+
+\"--------------------------------------------------------------------------------
+\sh 6.1 Make Targets
+\"--------------------------------------------------------------------------------
+The make targets are listed as the names of object-format files. Other images
+not listed here may not be tested.
+All "make" targets in this section is specific to the Intel(R) Nano CRB
+`base configuration' only and may not work with other configurations or boards
+supported by this BSP.
+
+\ts
+    `bootrom'
+    `bootrom.bin'
+    `vxWorks' (with `vxWorks.sym')
+    `vxWorks.st'
+\te
+
+\"--------------------------------------------------------------------------------
+\sh 6.2 BSP Bootloaders and Bootroms
+\"--------------------------------------------------------------------------------
+
+\ts
+Bootloader/Bootrom    | Status
+------------------------------
+BIOS (pre-flashed)    | SUPPORTED
+bootrom               | SUPPORTED
+bootrom_uncmp         | UNSUPPORTED
+vxWorks               | SUPPORTED
+vxWorks_rom           | UNSUPPORTED
+vxWorks_romCompress   | SUPPORTED
+vxWorks_romResident   | UNSUPPORTED
+vxStage1Boot          | SUPPORTED
+\te
+
+\is
+\i `vxWorks_romCompress':  SUPPORTED only for PROFILE_BOOTAPP_BASIC and default_romCompress
+build. When the bootrom image size is too large (larger than 589824 bytes), it is
+required to make use of the Multi-Stage boot mechanism described in the `BOOT PROCESS' section.
+\ie
+
+\"--------------------------------------------------------------------------------
+\sh 6.3 BSP Validated Tools
+\"--------------------------------------------------------------------------------
+
+\ts
+Tool                          | Connection/Type   | Status
+----------------------------------------------------------
+Workbench Debugger            | ETHERNET/WDB      | SUPPORTED
+Workbench System Viewer       | ETHERNET/WDB      | SUPPORTED
+Workbench MemScope            | ETHERNET/WDB      | SUPPORTED
+Workbench ProfileScope        | ETHERNET/WDB      | SUPPORTED
+Workbench StethoScope         | ETHERNET/WDB      | SUPPORTED
+Workbench CoverageScope       | ETHERNET/WDB      | SUPPORTED
+Workbench Core File Analysis  | ETHERNET/WDB      | UNVALIDATED
+Workbench Sensor Points       | ETHERNET/WDB      | UNVALIDATED
+Workbench OCD Debugger        | JTAG              | SUPPORTED
+Workbench OCD Flash           | JTAG              | UNSUPPORTED
+\te
+
+\"--------------------------------------------------------------------------------
+\sh 6.4 Special Routines
+\"--------------------------------------------------------------------------------
+The following routines are specific to this BSP and are available to the user.
+They are written in assembly code in sysALib.s. For further details, please
+refer to following entries:
+
+\ts
+sysInByte()         | input one byte from I/O space
+sysInWord()         | input one word from I/O space
+sysInLong()         | input one long-word from I/O space
+sysOutByte()        | output one byte to I/O space
+sysOutWord()        | output one word to I/O space
+sysOutLong()        | output one long-word to I/O space
+sysInWordString()   | input word string from I/O space
+sysInLongString()   | input long string from I/O space
+sysOutWordString()  | output word string to I/O space
+sysOutLongString()  | output long string to I/O space
+\te
+
+\"--------------------------------------------------------------------------------
+\sh 6.5 BIOS E820 Memory Auto-size
+\"--------------------------------------------------------------------------------
+Intel(R) memory auto-size support using E820 BIOS memory map information.
+Using the 0x15 interrupt with function code 0xe820, the physical RAM
+memory map can be retrieved from the BIOS.  The data returned is a set of
+descriptors containing the memory range start address, length, and type.
+The data is acquired while in 16 bit REAL mode during cold boot in the
+bootrom, and stored in a fixed location in reserved memory.  This data
+is in turn consumed by the VxWorks image during startup to dynamically
+adjust the top of memory.  Additional memory segments beyond the
+one located at LOCAL_MEM_LOCAL_ADRS are automatically mapped to the MMU.
+
+By default, BIOS E820 memory auto sizing is enabled.  To disable, add
+the INCLUDE_NO_MEM_AUTOSIZE component to your project.
+\cs
+    vxprj component add INCLUDE_NO_MEM_AUTOSIZE
+\ce
+
+When BIOS E820 memory auto sizing is disabled, the LOCAL_MEM_SIZE parameter
+must be set to reflect the top of usable memory.  This value is typically
+the desired system ram size minus the on-board memory base (0x00100000).  
+To configure .75 GB of system ram (0x30000000), the LOCAL_MEM_SIZE
+parameter would be 0x2ff00000 (0x30000000-0x00100000).
+\cs
+    vxprj parameter set LOCAL_MEM_SIZE 0x2ff00000
+\ce
+
+The BIOS typically reserves some portion of memory for its use, so the
+physically installed ram size can never be used as the desired system ram size.
+On 32-bit platforms, the desired system ram size should not exceed 3.4GB.
+
+\"--------------------------------------------------------------------------------
+\sh 6.6 Warm Boot Devices
+\"--------------------------------------------------------------------------------
+To select the warm start device in a vxprj based image, add the
+corresponding component to the project and the SYS_WARM_TYPE
+parameter will automatically be set using the requested type.
+
+`NOTE': Note that the following components are `not' supported by this BSP
+\cs
+INCLUDE_SYS_WARM_FD
+INCLUDE_SYS_WARM_TFFS
+\ce
+
+`Supported components for warm boot device selection:'
+\cs
+INCLUDE_SYS_WARM_BIOS
+INCLUDE_SYS_WARM_USB
+INCLUDE_SYS_WARM_ICH
+INCLUDE_SYS_WARM_AHCI
+\ce
+
+`Example: To add warm start from BIOS'
+\cs
+    vxprj component add INCLUDE_SYS_WARM_BIOS
+\ce
+
+\"--------------------------------------------------------------------------------
+\sh 6.7 Hyper-threading configuration
+\"--------------------------------------------------------------------------------
+SMT support may not available for all CRB's supported by this BSP. Support for
+Hyper-threading and SMT is indicated by the availability of a SMT bundle for the VxWorks
+kernel. Adding the correct bundle will setup the scheduling policy to handle
+Hyper-threading enabled CRBs as required.
+
+For detailed information about SMT (Simultaneous multithreading), please refer to the
+\tb VxWorks Programmer's Guide: Architecture Supplement
+   
+Enable Hyper-threading in the BIOS (Mooncreek CRB example)
+\cs
+    Advanced
+        -> CPU Configuration
+            -> Hyper-Threading
+                -> Enabled
+\ce
+
+When configuring your VxWorks kernel via the vxprj project facility, add the
+following bundle to your VxWorks kernel project:
+
+For the `Cedar Rock' CRB
+\cs
+    vxprj bundle add BUNDLE_CEDAR_ROCK_SMT
+\ce
+
+For the `Mooncreek' CRB
+\cs
+    vxprj bundle add BUNDLE_MOONCREEK_SMT
+\ce
+
+For the `Bayley Bay' CRB
+\cs
+    vxprj bundle add BUNDLE_BAY_TRAIL_SMT
+\ce
+
+Rebuild your VxWorks image project, if bundle was added after initial build.
+\cs
+    vxprj build
+\ce
+
+When configuring your VxWorks kernel via Workbench
+
+\cs
+    -> Right click on your project
+      -> Edit Kernel Configuration
+        -> Click on Bundles tab
+          -> Add one of the following bundles:
+             "Intel Cedar Rock SMT Board Bundle" (BUNDLE_CEDAR_ROCK_SMT)
+             -- or --
+             "Intel Mooncreek SMT Board Bundle" (BUNDLE_MOONCREEK_SMT)
+             -- or --
+             "Intel Bayley Bay SMT Board Bundle" (BUNDLE_BAY_TRAIL_SMT)
+\ce
+
+\"--------------------------------------------------------------------------------
+\sh 6.8 Four distinct build models
+\"--------------------------------------------------------------------------------
+
+\ts
+-------------------------+--------------------------------------------------------------------
+Model                    | Usage
+-------------------------+--------------------------------------------------------------------
+'UP'                     | image built to run on only CPU 0 with no multi-image support
+'SMP'                    | image built to run on a CPU set starting at CPU 0 with no
+                         |   multi-image support
+'bootrom'                | rom based UP bootloader for loading CPU 0 images
+'BootApp'                | a project built rom or ram based UP loader for loading CPU 0 images
+-------------------------+--------------------------------------------------------------------
+\te
+
+\"--------------------------------------------------------------------------------
+\sh UP
+\"--------------------------------------------------------------------------------
+UP is a uniprocessor kernel configured to be run on physical CPU 0.
+
+\"--------------------------------------------------------------------------------
+\sh SMP
+\"--------------------------------------------------------------------------------
+
+The number of CPUs assigned to an image is controlled by the
+project parameter VX_SMP_NUM_CPUS.  When you create the project, the
+VX_SMP_NUM_CPUS parameter will default to the maximum number of
+CPUs supported by the processor.
+
+Using the "vxprj" utility, you could modify VX_SMP_NUM_CPUS as follows
+using the command line or you can use the Kernel Configuration editor in
+Workbench.
+
+\bs
+$ cd <projectDir>
+$ vxprj parameter set VX_SMP_NUM_CPUS 2
+$ vxprj build
+\be
+
+\"--------------------------------------------------------------------------------
+\sh 6.9 Changing AP startup time in SMP based configuration                            
+\"-------------------------------------------------------------------------------- 
+
+This BSP supports changing the time allowed checking to see if and application
+processor succeeded in starting up. Two variables are used to control the count of
+times to check and how long to wait between checks to check the corresponding bit
+in the variable vxCpuEnabled is enabled.
+
+Variables SYS_AP_LOOP_COUNT and SYS_AP_TIMEOUT can be changed in your vxprj project
+\cs
+    vxprj parameter set SYS_AP_LOOP_COUNT 200000
+    vxprj parameter set SYS_AP_TIMEOUT 10
+\ce
+
+It is also visible under your Workbench project BSP build parameters.
+\cs
+        -> Right click on your project 
+          -> Edit Kernel Configuration
+            -> Click on Components tab  
+              -> Expand "Hardware"
+                -> Expand "itl_atom BSP configuration options"
+                  -> Expand "iBSP build parameters"
+                     -> Change value for SYS_AP_LOOP_COUNT as desired.
+                     -> Change value for SYS_AP_TIMEOUT as desired.
+
+    Now rebuild you project.
+\ce
+
+
+SYS_AP_TIMEOUT time is specified in microseconds and should be short in duration.
+SYS_AP_LOOP_COUNT times SYS_AP_TIMEOUT gives the total time to wait for an AP before
+giving up and moving on to the next application processor.
+
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 7.0 KNOWN PROBLEMS
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+1. Only one hard disk on controller 0 is tested.
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 8.0 BOARD LAYOUT
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+Please consult your board vendor documentation for the board layout.
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 9.0 SEE ALSO
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+\tb VxWorks User's Guide: Getting Started
+
+\tb VxWorks Programmer's Guide: Configuration
+
+\tb VxWorks Programmer's Guide: Architecture Supplement
+
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+\h 11.0 BIBLIOGRAPHY
+\"--------------------------------------------------------------------------------
+\"--------------------------------------------------------------------------------
+
+\tb Intel(R) Architecture Software Developer's Manual, Volume 1: Basic Architecture
+
+\tb Intel(R) Architecture Software Developer's Manual, Volume 2: Instruction Set Reference
+
+\tb Intel(R) Architecture Software Developer's Manual, Volume 3: System Programming Guide
+
+\tb AP-485, Intel(R) Processor Identification and the CPUID Instruction
+
+\tb PCI System Architecture, Fourth Edition, Addison-Wesley, 1999, ISBN 0-201-30974-2
+\bs
+NOTE: Intel(R) Mooncreek, Intel(R) Navypier, Intel(R) Crownbeach, Intel(R) CedarRock 
+      CRB, Intel(R) Crown Bay CRB, and Intel(R) Bayley Bay CRB documentation is 
+      proprietary and can only be obtained at this time from Intel. Contact your sales 
+      representative.
+NOTE: Portwell WADE 8070 and Portwell NANO 8044 CRB documentation is proprietary and
+      can only be obtained at this time from Portwell. Contact your sales representative.
+NOTE: Emerson NITX-300/315 documentation is proprietary and can only be obtained at this
+      time from Emerson. Contact your sales representative.
+\be
